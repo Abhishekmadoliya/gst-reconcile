@@ -17,14 +17,14 @@ export default function HeroSection() {
 
             {/* Headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-sans text-foreground mt-4 tracking-tight leading-[1.15]">
-              Say goodbye to manual VLOOKUPs. Reconcile in seconds.
+              GSTR-2B Reconciliation Software for CA Firms in India | Automate ITC Matching
             </h1>
 
             {/* Value description */}
             <p className="text-sm sm:text-base text-muted-foreground mt-4 leading-relaxed">
-              Automate the monthly GSTR-2B vs Purchase Register matching cycle.
-              Automatically identify discrepancies, chase late-filing suppliers,
-              and claim 100% of your eligible ITC with zero compliance leakage.
+              Automate the monthly GSTR-2B vs Purchase Register matching cycle for CA firms.
+              Identify ITC mismatches, avoid Section 50 penalties, chase late-filing suppliers,
+              and claim 100% of your eligible ITC. Trusted by 250+ CA firms across India.
             </p>
 
             {/* Core benefits checklist */}
@@ -92,7 +92,7 @@ export default function HeroSection() {
                 <span className="h-2.5 w-2.5 rounded-full bg-red-400"></span>
                 <span className="h-2.5 w-2.5 rounded-full bg-amber-400"></span>
                 <span className="h-2.5 w-2.5 rounded-full bg-green-400"></span>
-                <span className="text-[10px] font-mono text-muted-foreground ml-3">gst-recon-autopilot // dashboard</span>
+                <span className="text-[10px] font-mono text-muted-foreground ml-3">taxsolver // dashboard</span>
               </div>
               <ReconSandbox />
             </div>
