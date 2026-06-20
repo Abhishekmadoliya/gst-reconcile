@@ -198,7 +198,7 @@ export default function ReconcileQueueTab({ setActiveTab, setSelectedJobId, sele
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!selectedGstinId) {
+    if (!activeGstinId) {
       setErrorMsg("Please select a GSTIN client from the Left Explorer panel.");
       return;
     }
@@ -212,7 +212,7 @@ export default function ReconcileQueueTab({ setActiveTab, setSelectedJobId, sele
 
     const period = `${selectedMonth}${selectedYear}`;
     const formData = new FormData();
-    formData.append("gstinId", selectedGstinId);
+    formData.append("gstinId", activeGstinId);
     formData.append("period", period);
     formData.append("purchaseRegister", selectedFile);
 
@@ -367,7 +367,7 @@ export default function ReconcileQueueTab({ setActiveTab, setSelectedJobId, sele
             {/* Run Button */}
             <button
               type="submit"
-              disabled={isUploading || !selectedGstinId || !selectedFile || !!(activePollJob && activePollJob.status !== "done" && activePollJob.status !== "failed")}
+              disabled={isUploading || !activeGstinId || !selectedFile || !!(activePollJob && activePollJob.status !== "done" && activePollJob.status !== "failed")}
               className="w-full flex items-center justify-center gap-1.5 h-9 bg-primary hover:bg-primary/95 text-primary-foreground text-[10px] font-extrabold uppercase tracking-wider rounded-sm shadow-md transition-colors cursor-pointer disabled:opacity-50"
             >
               {isUploading ? (

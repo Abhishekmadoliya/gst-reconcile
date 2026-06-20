@@ -33,6 +33,7 @@ export default function Footer() {
               <ul className="space-y-1.5 text-[10px]">
                 <li><Link href="/gst-reconciliation-software" className="text-muted-foreground hover:text-foreground transition-colors">Software Features</Link></li>
                 <li><Link href="/free-tools/itc-calculator" className="text-muted-foreground hover:text-foreground transition-colors">ITC Calculator</Link></li>
+                <li><Link href="/free-tools/offline-reconciliation" className="text-muted-foreground hover:text-foreground transition-colors">Offline Recon Tool</Link></li>
                 <li><Link href="/integrations/tally" className="text-muted-foreground hover:text-foreground transition-colors">Tally Integration</Link></li>
                 <li><Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
               </ul>

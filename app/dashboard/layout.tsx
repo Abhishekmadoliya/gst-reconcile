@@ -154,8 +154,8 @@ export default function DashboardLayout({
 
   // 5. Verify GSP OTP Mutation
   const verifyOtpMutation = useMutation({
-    mutationFn: async ({ id, otp, requestId }: { id: string; otp: string; requestId: string }) => {
-      const res = await api.post(`${API_URL}/api/gstins/${id}/verify-otp`, { otp, requestId });
+    mutationFn: async ({ id, otp, requestId, username }: { id: string; otp: string; requestId: string; username: string }) => {
+      const res = await api.post(`${API_URL}/api/gstins/${id}/verify-otp`, { otp, requestId, username });
       return res.data;
     },
     onSuccess: () => {
@@ -221,6 +221,7 @@ export default function DashboardLayout({
       id: connectingGstin.id,
       otp: otpCode.trim(),
       requestId: otpRequestId,
+      username: gspUsername.trim(),
     });
   };
 
