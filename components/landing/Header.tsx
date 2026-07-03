@@ -33,9 +33,9 @@ export default function Header() {
             <a href="#pricing" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </a>
-            {/* <a href="#faq" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-              FAQ
-            </a> */}
+            <Link href="/blog" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Blog
+            </Link>
           </nav>
         </div>
 

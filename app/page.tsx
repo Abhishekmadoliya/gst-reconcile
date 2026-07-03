@@ -8,6 +8,7 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import CompetitorComparisonSection from "@/components/landing/CompetitorComparisonSection";
 import SupplierMatrix from "@/components/landing/SupplierMatrix";
 import PricingSection from "@/components/landing/PricingSection";
+import LatestBlogsSection from "@/components/landing/LatestBlogsSection";
 import FAQSection from "@/components/landing/FAQSection";
 
 export default function Home() {
@@ -72,6 +73,9 @@ export default function Home() {
 
         {/* 6. Pricing Plans and CA Firm ROI Calculations */}
         <PricingSection />
+
+        {/* Latest Blog Posts */}
+        <LatestBlogsSection />
 
         {/* 7. Frequently Asked Compliance & Technical Questions */}
         <FAQSection />

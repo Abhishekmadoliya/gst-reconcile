@@ -256,11 +256,12 @@ export default function DashboardLayout({
     { path: "/dashboard/gstr3b", label: "GSTR-3B", icon: FileText },
     { path: "/dashboard/billing", label: "Billing", icon: CreditCard },
     { path: "/dashboard/settings", label: "Settings", icon: Settings },
+    { path: "/dashboard/start-reconciliation", label: "Recon", icon: Settings }
   ];
 
   return (
     <div className="flex flex-col bg-background min-h-screen text-foreground transition-colors duration-200">
-      
+
       {/* GLOBAL TOP HEADER */}
       <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 sticky top-0 z-30 shrink-0 select-none">
         {/* Brand Logo */}
@@ -271,7 +272,7 @@ export default function DashboardLayout({
             </span>
             <span className="hidden sm:inline">TaxSolver</span>
           </Link>
-          
+
           {/* Breadcrumb / Active Client Display */}
           {activeClient ? (
             <div className="hidden md:flex items-center gap-2 font-mono text-[11px] border-l border-border pl-6 py-1">
@@ -281,11 +282,10 @@ export default function DashboardLayout({
               <span className="text-muted-foreground text-[10px]">
                 {activeClient.gstin}
               </span>
-              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-sans font-bold ${
-                activeClient.status === "connected"
+              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-sans font-bold ${activeClient.status === "connected"
                   ? "bg-success-bg/10 text-success"
                   : "bg-warn-bg/10 text-warn"
-              }`}>
+                }`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${getStatusLedClass(activeClient.status)}`} />
                 {activeClient.status === "connected" ? "Linked" : "Offline"}
               </span>
@@ -303,11 +303,10 @@ export default function DashboardLayout({
           {notification && (
             <div
               onClick={() => setNotification(null)}
-              className={`py-1 px-3 border rounded-sm text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer max-w-[280px] truncate ${
-                notification.type === "success"
+              className={`py-1 px-3 border rounded-sm text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer max-w-[280px] truncate ${notification.type === "success"
                   ? "bg-compliance-success-bg text-compliance-success border-compliance-success/20"
                   : "bg-compliance-alert-bg text-compliance-alert border-compliance-alert/20"
-              }`}
+                }`}
             >
               {notification.type === "success" ? (
                 <CheckCircle2 className="h-3 w-3 shrink-0" />
@@ -340,10 +339,10 @@ export default function DashboardLayout({
 
       {/* SUB-HEADER / WORKSPACE GRID */}
       <div className="flex-1 flex overflow-hidden">
-        
+
         {/* LEFT SIDEBAR */}
         <aside className="w-64 bg-card border-r border-border flex flex-col h-[calc(100vh-3.5rem)] sticky top-14 shrink-0 select-none text-left">
-          
+
           {/* Client Switcher */}
           <div className="relative px-4 py-3 border-b border-border">
             <label className="text-[9px] font-extrabold uppercase tracking-widest text-muted-foreground block mb-1">
@@ -355,9 +354,8 @@ export default function DashboardLayout({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <div
-                  className={`h-2 w-2 rounded-full shrink-0 ${
-                    activeClient ? getStatusLedClass(activeClient.status) : "bg-muted-foreground/45"
-                  }`}
+                  className={`h-2 w-2 rounded-full shrink-0 ${activeClient ? getStatusLedClass(activeClient.status) : "bg-muted-foreground/45"
+                    }`}
                 />
                 <div className="truncate">
                   <p className="text-xs font-bold text-foreground truncate">
@@ -376,8 +374,8 @@ export default function DashboardLayout({
             {/* Dropdown Menu */}
             {showClientDropdown && (
               <>
-                <div 
-                  className="fixed inset-0 z-40" 
+                <div
+                  className="fixed inset-0 z-40"
                   onClick={() => setShowClientDropdown(false)}
                 />
                 <div className="absolute left-4 right-4 mt-1 bg-popover border border-border rounded-lg shadow-xl z-50 flex flex-col max-h-96 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
@@ -407,9 +405,8 @@ export default function DashboardLayout({
                       filteredGstins.map((client) => (
                         <div
                           key={client.id}
-                          className={`w-full flex items-center justify-between gap-2 p-2.5 hover:bg-muted/50 transition-colors ${
-                            client.id === selectedGstinId ? "bg-muted font-semibold" : ""
-                          }`}
+                          className={`w-full flex items-center justify-between gap-2 p-2.5 hover:bg-muted/50 transition-colors ${client.id === selectedGstinId ? "bg-muted font-semibold" : ""
+                            }`}
                         >
                           <button
                             onClick={() => {
@@ -426,12 +423,12 @@ export default function DashboardLayout({
                               {client.gstin}
                             </p>
                           </button>
-                          
+
                           <div className="flex items-center gap-2 shrink-0">
                             <span
                               className={`h-1.5 w-1.5 rounded-full ${getStatusLedClass(client.status)}`}
                             />
-                            
+
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -477,11 +474,10 @@ export default function DashboardLayout({
                 <Link
                   key={tab.path}
                   href={tab.path}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    isActive
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${isActive
                       ? "bg-primary text-primary-foreground font-bold shadow-sm"
                       : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                  }`}
+                    }`}
                 >
                   <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary-foreground" : "text-muted-foreground"}`} />
                   <span>{tab.label}</span>
@@ -493,11 +489,10 @@ export default function DashboardLayout({
             {selectedJobId && (
               <Link
                 href={`/dashboard/reconcile/${selectedJobId}`}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                  pathname.startsWith("/dashboard/reconcile/") && pathname !== "/dashboard/reconcile/new"
+                className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${pathname.startsWith("/dashboard/reconcile/") && pathname !== "/dashboard/reconcile/new"
                     ? "bg-info text-info-foreground font-bold shadow-sm"
                     : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                }`}
+                  }`}
               >
                 <FileText className="h-4 w-4 shrink-0 text-inherit" />
                 <span>Results Ledger</span>
@@ -711,7 +706,7 @@ export default function DashboardLayout({
                 <div className="p-2.5 rounded-md bg-muted/40 border border-border text-[9px] text-muted-foreground leading-normal mb-2">
                   An OTP has been dispatched by GSP. Enter the 6-digit code.
                 </div>
-                
+
                 <div className="space-y-1">
                   <label className="text-[8px] font-extrabold uppercase tracking-widest text-muted-foreground">
                     Verification Code
