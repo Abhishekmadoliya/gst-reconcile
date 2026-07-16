@@ -49,9 +49,11 @@ export default function Footer() {
             <div className="space-y-2 text-left">
               <h5 className="text-[10px] font-bold uppercase tracking-wider text-foreground">Company</h5>
               <ul className="space-y-1.5 text-[10px]">
+                <li><Link href="/about-us" className="text-muted-foreground hover:text-foreground transition-colors">About Us</Link></li>
                 <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Security Audit Report</Link></li>
                 <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
                 <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link></li>
+                <li><Link href="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link></li>
               </ul>
             </div>
           </div>

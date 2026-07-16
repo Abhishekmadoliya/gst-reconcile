@@ -13,6 +13,8 @@ export async function GET() {
     { path: "integrations/tally", changefreq: "weekly", priority: "0.7" },
     { path: "login", changefreq: "monthly", priority: "0.5" },
     { path: "register", changefreq: "monthly", priority: "0.5" },
+    { path: "contact-us", changefreq: "monthly", priority: "0.6" },
+    { path: "about-us", changefreq: "monthly", priority: "0.6" },
   ];
 
   const today = new Date().toISOString().split("T")[0];
