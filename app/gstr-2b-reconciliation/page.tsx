@@ -1,11 +1,24 @@
-import Header from "@/components/landing/Header";
-import Footer from "@/components/landing/Footer";
+
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
 
 export const metadata = {
   title: "What is GSTR-2B Reconciliation? Complete Guide (2025-26) | TaxSolver",
   description: "Learn what GSTR-2B is, why reconciliation with purchase registers matters, and how to fix ITC mismatches. The ultimate guide for CA firms in India.",
+  keywords: [
+    "GSTR-2B reconciliation",
+    "what is GSTR-2B",
+    "ITC mismatch",
+    "DRC-01C notice",
+    "purchase register matching",
+    "GST rule 88D",
+  ],
+  openGraph: {
+    title: "What is GSTR-2B Reconciliation? Complete Guide (2025-26) | TaxSolver",
+    description: "Learn what GSTR-2B is, why reconciliation with purchase registers matters, and how to fix ITC mismatches. The ultimate guide for CA firms in India.",
+    type: "article",
+    url: "https://taxsolver.in/gstr-2b-reconciliation",
+  },
 };
 
 export default function GSTR2BGuidePage() {
@@ -13,6 +26,23 @@ export default function GSTR2BGuidePage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-200 selection:bg-primary selection:text-primary-foreground">
 
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-12 lg:py-20 w-full">
+        {/* Structured Data (Schema.org JSON-LD) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Article",
+              "headline": "What is GSTR-2B Reconciliation? The Complete Guide (2025–26)",
+              "description": "Learn what GSTR-2B is, why reconciliation with purchase registers matters, and how to fix ITC mismatches.",
+              "author": {
+                "@type": "Organization",
+                "name": "TaxSolver"
+              }
+            })
+          }}
+        />
+
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-8">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>

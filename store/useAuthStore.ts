@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { API_URL } from "@/lib/config";
+import api from "@/lib/api";
 
 export interface UserProfile {
   id: string;
@@ -24,14 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     try {
       // Clear HTTP-Only cookies on the backend
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Must include credentials so express receives the secure cookies to clear them
-        credentials: "include",
-      });
+      await api.post('/auth/logout');
     } catch (err) {
       console.error("Failed to call logout on backend:", err);
     } finally {

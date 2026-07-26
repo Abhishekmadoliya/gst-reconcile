@@ -9,6 +9,19 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 export const metadata = {
   title: "Best GST Reconciliation Software for CA Firms in India (2026)",
   description: "Compare the best GSTR-2B reconciliation software. See why modern CA firms choose TaxSolver over ClearTax, LEDGERS, and Excel VLOOKUPs.",
+  keywords: [
+    "GST reconciliation software",
+    "GSTR-2B matching tool",
+    "CA firm GST software",
+    "ITC reconciliation India",
+    "TaxSolver GST",
+  ],
+  openGraph: {
+    title: "Best GST Reconciliation Software for CA Firms in India (2026)",
+    description: "Compare the best GSTR-2B reconciliation software. See why modern CA firms choose TaxSolver over ClearTax, LEDGERS, and Excel VLOOKUPs.",
+    type: "website",
+    url: "https://taxsolver.in/gst-reconciliation-software",
+  },
 };
 
 export default function SoftwareLandingPage() {
@@ -16,6 +29,27 @@ export default function SoftwareLandingPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-200 selection:bg-primary selection:text-primary-foreground">
 
       <main className="flex-1 w-full">
+
+        {/* Structured Data (Schema.org JSON-LD) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "TaxSolver GST Reconciliation Software",
+              "description": "High-performance GSTR-2B reconciliation software designed for CA Firms in India.",
+              "applicationCategory": "BusinessApplication",
+              "operatingSystem": "Web",
+              "url": "https://taxsolver.in/gst-reconciliation-software",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "INR"
+              }
+            })
+          }}
+        />
 
         {/* Commercial Hero */}
         <section className="py-20 border-b border-border bg-muted/10">

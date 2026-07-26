@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import OfflineReconciliationClient from "./OfflineReconciliationClient";
-import { ShieldCheck, HelpCircle, ShieldAlert, Zap, Lock } from "lucide-react";
+import { ShieldCheck, HelpCircle, ShieldAlert, Zap, Lock, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Free Offline GSTR-2B Reconciliation Tool & Purchase Matcher | TaxSolver",
@@ -49,6 +50,20 @@ export default function OfflineReconciliationPage() {
         {/* Interactive Client Component Container */}
         <div className="max-w-7xl mx-auto pb-16">
           <OfflineReconciliationClient />
+          
+          {/* CTA */}
+          <div className="mt-8 max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 px-4 sm:px-6">
+            <div className="text-sm text-foreground">
+              Ready to completely automate your GSTR-2B reconciliation without Excel?
+            </div>
+            <Link
+              href="/gst-reconciliation-software"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Explore TaxSolver Software
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
 
         {/* ========================================================

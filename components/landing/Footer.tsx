@@ -34,6 +34,8 @@ export default function Footer() {
                 <li><Link href="/gst-reconciliation-software" className="text-muted-foreground hover:text-foreground transition-colors">Software Features</Link></li>
                 <li><Link href="/free-tools/itc-calculator" className="text-muted-foreground hover:text-foreground transition-colors">ITC Calculator</Link></li>
                 <li><Link href="/free-tools/offline-reconciliation" className="text-muted-foreground hover:text-foreground transition-colors">Offline Recon Tool</Link></li>
+                <li><Link href="/gst-due-date-calender" className="text-muted-foreground hover:text-foreground transition-colors">GST Due Date Calendar</Link></li>
+                <li><Link href="/gst-late-fee-calculator" className="text-muted-foreground hover:text-foreground transition-colors">Late Fee Calculator</Link></li>
                 <li><Link href="/integrations/tally" className="text-muted-foreground hover:text-foreground transition-colors">Tally Integration</Link></li>
                 <li><Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
               </ul>
@@ -51,8 +53,8 @@ export default function Footer() {
               <ul className="space-y-1.5 text-[10px]">
                 <li><Link href="/about-us" className="text-muted-foreground hover:text-foreground transition-colors">About Us</Link></li>
                 <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Security Audit Report</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link></li>
+                <li><Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link></li>
                 <li><Link href="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link></li>
               </ul>
             </div>

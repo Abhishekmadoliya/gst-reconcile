@@ -6,6 +6,9 @@ import QueryProvider from "@/components/providers/QueryProvider";
 import { getServerUser } from "@/lib/auth";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
+import CookieConsent from "@/components/landing/CookieConsent";
+import { GoogleAnalytics } from '@next/third-parties/google'
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,8 +63,10 @@ export default async function RootLayout({
             <Header />
             {children}
             <Footer />
+            <CookieConsent />
           </AuthInitializer>
         </QueryProvider>
+        <GoogleAnalytics gaId="G-ZFP6DZ95DZ" />
       </body>
     </html>
   );

@@ -283,8 +283,8 @@ export default function DashboardLayout({
                 {activeClient.gstin}
               </span>
               <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-sans font-bold ${activeClient.status === "connected"
-                  ? "bg-success-bg/10 text-success"
-                  : "bg-warn-bg/10 text-warn"
+                ? "bg-success-bg/10 text-success"
+                : "bg-warn-bg/10 text-warn"
                 }`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${getStatusLedClass(activeClient.status)}`} />
                 {activeClient.status === "connected" ? "Linked" : "Offline"}
@@ -304,8 +304,8 @@ export default function DashboardLayout({
             <div
               onClick={() => setNotification(null)}
               className={`py-1 px-3 border rounded-sm text-[9px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer max-w-[280px] truncate ${notification.type === "success"
-                  ? "bg-compliance-success-bg text-compliance-success border-compliance-success/20"
-                  : "bg-compliance-alert-bg text-compliance-alert border-compliance-alert/20"
+                ? "bg-compliance-success-bg text-compliance-success border-compliance-success/20"
+                : "bg-compliance-alert-bg text-compliance-alert border-compliance-alert/20"
                 }`}
             >
               {notification.type === "success" ? (
@@ -341,7 +341,7 @@ export default function DashboardLayout({
       <div className="flex-1 flex overflow-hidden">
 
         {/* LEFT SIDEBAR */}
-        <aside className="w-64 bg-card border-r border-border flex flex-col h-[calc(100vh-3.5rem)] sticky top-14 shrink-0 select-none text-left">
+        <aside className="w-64 bg-card border-r border-border flex flex-col h-[calc(100vh-3.5rem)] sticky  shrink-0 select-none text-left">
 
           {/* Client Switcher */}
           <div className="relative px-4 py-3 border-b border-border">
@@ -475,8 +475,8 @@ export default function DashboardLayout({
                   key={tab.path}
                   href={tab.path}
                   className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${isActive
-                      ? "bg-primary text-primary-foreground font-bold shadow-sm"
-                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                     }`}
                 >
                   <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary-foreground" : "text-muted-foreground"}`} />
@@ -490,8 +490,8 @@ export default function DashboardLayout({
               <Link
                 href={`/dashboard/reconcile/${selectedJobId}`}
                 className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${pathname.startsWith("/dashboard/reconcile/") && pathname !== "/dashboard/reconcile/new"
-                    ? "bg-info text-info-foreground font-bold shadow-sm"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  ? "bg-info text-info-foreground font-bold shadow-sm"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                   }`}
               >
                 <FileText className="h-4 w-4 shrink-0 text-inherit" />
