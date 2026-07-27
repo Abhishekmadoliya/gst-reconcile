@@ -10,6 +10,8 @@ export async function GET() {
     { path: "drc-01c-notice", changefreq: "weekly", priority: "0.8" },
     { path: "free-tools/itc-calculator", changefreq: "weekly", priority: "0.7" },
     { path: "free-tools/offline-reconciliation", changefreq: "weekly", priority: "0.7" },
+    { path: "gst-due-date-calender", changefreq: "weekly", priority: "0.7" },
+    { path: "gst-late-fee-calculator", changefreq: "weekly", priority: "0.7" },
     { path: "integrations/tally", changefreq: "weekly", priority: "0.7" },
     { path: "login", changefreq: "monthly", priority: "0.5" },
     { path: "register", changefreq: "monthly", priority: "0.5" },
