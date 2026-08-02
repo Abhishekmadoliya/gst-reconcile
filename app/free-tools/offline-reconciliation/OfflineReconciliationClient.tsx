@@ -306,7 +306,7 @@ export default function OfflineReconciliationClient() {
   }
 
 
-  function handleDownLoadTemplate(params: type) {
+  function handleDownLoadTemplate(): any {
     window.open("/template/pur_tem.xlsx", "_blank")
   }
 
