@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
+import TaxSolverLogo from "../logos/v1";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -8,14 +9,11 @@ export default function Footer() {
     <footer className="bg-card border-t border-border mt-auto transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          
+
           {/* Logo & Compliance Info */}
           <div className="space-y-3 max-w-sm text-left">
             <Link href="/" className="flex items-center gap-2 font-mono font-semibold tracking-tight text-foreground hover:opacity-90 transition-opacity">
-              <span className="flex items-center justify-center bg-foreground text-background h-6 w-6 rounded font-sans font-bold text-xs">
-                TS
-              </span>
-              <span className="text-sm">TaxSolver</span>
+              <TaxSolverLogo size={28} />
             </Link>
             <p className="text-[10px] text-muted-foreground leading-normal">
               An enterprise-grade reconciliation utility for Chartered Accountants, corporate tax teams, and SMEs. Reconcile invoices, track vendor filing history, and prevent ITC tax leakage.

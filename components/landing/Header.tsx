@@ -4,6 +4,8 @@ import Link from "next/link";
 import ThemeToggle from "../ThemeToggle";
 import { useAuthStore } from "@/store/useAuthStore";
 import { LogOut, User } from "lucide-react";
+import TaxSolverLogo from "../logos/v1";
+import { ArrowUpRight } from "lucide-react";
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -15,24 +17,18 @@ export default function Header() {
         {/* Logo and navigation links */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 font-mono font-semibold tracking-tight text-lg text-foreground hover:opacity-95 transition-opacity">
-            <span className="flex items-center justify-center bg-foreground text-background h-7 w-7 rounded font-sans font-bold text-sm">
-              TS
-            </span>
-            <span>TaxSolver</span>
+            <TaxSolverLogo size={28} />
           </Link>
           <nav className="hidden md:flex items-center gap-4">
-            <a href="#demo" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Demo
-            </a>
-            <a href="#risk-calculator" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Calculator
-            </a>
-            <a href="#suppliers" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Suppliers
-            </a>
-            <a href="#pricing" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
-            </a>
+            <Link href="/free-tools/offline-reconciliation" className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Try Free GST Reconciliation <ArrowUpRight className="h-3 w-3" />
+            </Link>
+            <Link href="/gst-due-date-calender" className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+              GST Due Date Calender <ArrowUpRight className="h-3 w-3" />
+            </Link>
+            <Link href="/free-tools/itc-calculator" className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+              ITC Calculator <ArrowUpRight className="h-3 w-3" />
+            </Link>
             <Link href="/blog" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
               Blog
             </Link>

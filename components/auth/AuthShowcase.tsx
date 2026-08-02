@@ -1,17 +1,15 @@
 import { ShieldCheck, Database, Layers, ShieldAlert, Check } from "lucide-react";
 import Link from "next/link";
+import TaxSolverLogo from "../logos/v1";
 
 export default function AuthShowcase() {
   return (
     <div className="hidden lg:flex lg:col-span-6 flex-col justify-between p-12 bg-muted/30 border-r border-border h-full relative transition-colors duration-200">
-      
+
       {/* 1. Header Area with Logo */}
       <div className="space-y-4">
         <Link href="/" className="flex items-center gap-2 font-mono font-semibold tracking-tight text-lg text-foreground hover:opacity-90 transition-opacity w-fit">
-          <span className="flex items-center justify-center bg-foreground text-background h-7 w-7 rounded font-sans font-bold text-sm">
-            GST
-          </span>
-          <span>Recon<span className="text-success">.</span>autopilot</span>
+          <TaxSolverLogo size={28} />
         </Link>
         <p className="text-xs text-muted-foreground max-w-sm">
           Enterprise-grade reconciliation engine for Chartered Accountants, corporate finance leads, and tax practitioners.
