@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   // withCredentials: true ensures that httpOnly cookies (like accessToken and refreshToken)
   // are automatically sent with every request to the backend.
   withCredentials: true,
@@ -54,19 +54,19 @@ api.interceptors.response.use(
       try {
         // Call the refresh endpoint. The browser will automatically attach the refreshToken cookie.
         await api.post('/auth/refresh');
-        
+
         // Once refreshed, process the queued requests and retry the original failed request
         processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
         // If refresh fails (e.g., refresh token expired), clear the queue and redirect
         processQueue(refreshError);
-        
+
         // Client-side redirect to login page
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }
-        
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

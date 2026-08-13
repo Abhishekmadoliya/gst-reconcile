@@ -25,17 +25,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     try {
       // Clear HTTP-Only cookies on the backend
-      await api.post('/auth/logout');
+      await api.post('/api/auth/logout');
     } catch (err) {
       console.error("Failed to call logout on backend:", err);
     } finally {
       // Always clear local state
       set({ user: null, isAuthenticated: false });
-      
+
       // Clear cookies client-side (for fallbacks)
       document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      
+
       // Force reload or redirect to trigger middleware check and update navbar
       window.location.href = "/";
     }
