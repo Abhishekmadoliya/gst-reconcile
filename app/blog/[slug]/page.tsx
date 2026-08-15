@@ -223,6 +223,22 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
             )}
 
+                        {/* E-E-A-T Author Trust Box */}
+            <div className="mt-12 p-6 rounded-xl border border-border bg-card/40 flex items-start gap-4 text-left shadow-xs">
+              <div className="h-12 w-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-lg shrink-0">
+                {post.author ? post.author.charAt(0).toUpperCase() : "T"}
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-foreground">Written by {post.author}</h4>
+                  <span className="text-[10px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded">Tax Verified</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Published by the TaxSolver editorial and compliance research group. All guidelines and tax calculations are reviewed against CBIC statutory notifications and CGST Act rules.
+                </p>
+              </div>
+            </div>
+
             {/* FAQ Accordion Section */}
             {post.faqs && post.faqs.length > 0 && (
               <div className="mt-16 border-t border-border/60 pt-12 text-left">
@@ -357,7 +373,13 @@ export default async function BlogPostPage({ params }: PageProps) {
               "datePublished": post.publishDate,
               "author": {
                 "@type": "Person",
-                "name": post.author
+                "name": post.author,
+                "jobTitle": "GST Compliance & Tax Technology Specialist",
+                "worksFor": {
+                  "@type": "Organization",
+                  "name": "TaxSolver",
+                  "url": "https://taxsolver.in"
+                }
               },
               "description": post.excerpt
             })

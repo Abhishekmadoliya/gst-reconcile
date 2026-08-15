@@ -99,9 +99,11 @@ export default function ContactUsClient() {
                   <Mail className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">General Support</h4>
-                  <p className="text-sm font-semibold mt-1">support@taxsolver.in</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Expect replies in under 2 hours during audit hours.</p>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">General & Technical Support</h4>
+                  <a href="mailto:abhishekmadoliya@gmail.com" className="text-sm font-semibold mt-1 text-foreground hover:text-primary transition-colors block">
+                    abhishekmadoliya@gmail.com
+                  </a>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Direct line to product engineering & compliance team.</p>
                 </div>
               </div>
 
@@ -110,9 +112,11 @@ export default function ContactUsClient() {
                   <Phone className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CA & Enterprise Sales</h4>
-                  {/* <p className="text-sm font-semibold mt-1">+91 98765 43210</p> */}
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Mon-Sat, 9:00 AM to 7:00 PM IST.</p>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CA & Enterprise Helpline</h4>
+                  <a href="tel:+919310069214" className="text-sm font-semibold mt-1 text-foreground hover:text-primary transition-colors block font-mono">
+                    +91 93100 69214
+                  </a>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Mon–Sat, 9:00 AM to 7:00 PM IST (WhatsApp enabled).</p>
                 </div>
               </div>
 
@@ -122,8 +126,8 @@ export default function ContactUsClient() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Headquarters</h4>
-                  {/* <p className="text-sm font-semibold mt-1">Gurugram, Haryana</p> */}
-                  {/* <p className="text-[11px] text-muted-foreground mt-0.5">Cyber Hub Tech District, India.</p> */}
+                  <p className="text-sm font-semibold mt-1">Badarpur, New Delhi, 110044</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">New Delhi National Capital Region, India.</p>
                 </div>
               </div>
             </div>

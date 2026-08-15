@@ -8,7 +8,7 @@ export default function Footer() {
   return (
     <footer className="bg-card border-t border-border mt-auto transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
 
           {/* Logo & Compliance Info */}
           <div className="space-y-3 max-w-sm text-left">
@@ -25,32 +25,43 @@ export default function Footer() {
           </div>
 
           {/* Links Grid */}
-          <div className="flex flex-wrap gap-8 md:gap-16">
+          <div className="flex flex-wrap gap-8 md:gap-12">
             <div className="space-y-2 text-left">
               <h5 className="text-[10px] font-bold uppercase tracking-wider text-foreground">Product</h5>
               <ul className="space-y-1.5 text-[10px]">
                 <li><Link href="/gst-reconciliation-software" className="text-muted-foreground hover:text-foreground transition-colors">Software Features</Link></li>
-                <li><Link href="/free-tools/itc-calculator" className="text-muted-foreground hover:text-foreground transition-colors">ITC Calculator</Link></li>
-                <li><Link href="/free-tools/offline-reconciliation" className="text-muted-foreground hover:text-foreground transition-colors">Offline Recon Tool</Link></li>
-                <li><Link href="/gst-due-date-calender" className="text-muted-foreground hover:text-foreground transition-colors">GST Due Date Calendar</Link></li>
+                <li><Link href="/free-tools/offline-reconciliation" className="text-muted-foreground hover:text-foreground transition-colors">Free Offline Recon</Link></li>
+                <li><Link href="/free-tools/itc-calculator" className="text-muted-foreground hover:text-foreground transition-colors">ITC Penalty Calculator</Link></li>
+                <li><Link href="/gst-due-date-calender" className="text-muted-foreground hover:text-foreground transition-colors">Due Date Calendar</Link></li>
                 <li><Link href="/gst-late-fee-calculator" className="text-muted-foreground hover:text-foreground transition-colors">Late Fee Calculator</Link></li>
                 <li><Link href="/integrations/tally" className="text-muted-foreground hover:text-foreground transition-colors">Tally Integration</Link></li>
-                <li><Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
+                <li><Link href="/#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
               </ul>
             </div>
+
+            <div className="space-y-2 text-left">
+              <h5 className="text-[10px] font-bold uppercase tracking-wider text-foreground">Compare</h5>
+              <ul className="space-y-1.5 text-[10px]">
+                <li><Link href="/compare/cleartax-vs-taxsolver" className="text-muted-foreground hover:text-foreground transition-colors">ClearTax vs TaxSolver</Link></li>
+                <li><Link href="/compare/expressgst-vs-taxsolver" className="text-muted-foreground hover:text-foreground transition-colors">ExpressGST vs TaxSolver</Link></li>
+                <li><Link href="/compare/ledgers-vs-taxsolver" className="text-muted-foreground hover:text-foreground transition-colors">LEDGERS vs TaxSolver</Link></li>
+              </ul>
+            </div>
+
             <div className="space-y-2 text-left">
               <h5 className="text-[10px] font-bold uppercase tracking-wider text-foreground">Resources</h5>
               <ul className="space-y-1.5 text-[10px]">
+                <li><Link href="/reports/gst-reconciliation-benchmark-2026" className="text-muted-foreground hover:text-foreground transition-colors font-semibold text-primary">2026 Benchmark Report</Link></li>
                 <li><Link href="/gstr-2b-reconciliation" className="text-muted-foreground hover:text-foreground transition-colors">GSTR-2B Guide</Link></li>
                 <li><Link href="/drc-01c-notice" className="text-muted-foreground hover:text-foreground transition-colors">DRC-01C Notice Reply</Link></li>
                 <li><Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Tax Blog</Link></li>
               </ul>
             </div>
+
             <div className="space-y-2 text-left">
               <h5 className="text-[10px] font-bold uppercase tracking-wider text-foreground">Company</h5>
               <ul className="space-y-1.5 text-[10px]">
                 <li><Link href="/about-us" className="text-muted-foreground hover:text-foreground transition-colors">About Us</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Security Audit Report</Link></li>
                 <li><Link href="/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link></li>
                 <li><Link href="/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link></li>
                 <li><Link href="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link></li>

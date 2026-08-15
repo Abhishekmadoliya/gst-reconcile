@@ -11,13 +11,16 @@ import {
   Lock,
   Search,
   ArrowRight,
-  Database
+  Database,
+  Award,
+  BookOpen,
+  Briefcase
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About TaxSolver - Smart GST Reconciliation Platform",
+  title: "About TaxSolver - Smart GST Reconciliation Platform & E-E-A-T Advisory",
   description: "Learn how TaxSolver helps Chartered Accountants, corporate finance teams, and SMEs automate GSTR-2B reconciliation, audit ITC discrepancies, and manage CGST compliance.",
-  keywords: ["about TaxSolver", "GST reconciliation engine", "CA audit tool history", "GSP tax compliance software"],
+  keywords: ["about TaxSolver", "GST reconciliation engine", "CA audit tool history", "GSP tax compliance software", "Abhishek Madoliya"],
   alternates: {
     canonical: "https://taxsolver.in/about-us",
   },
@@ -26,12 +29,57 @@ export const metadata: Metadata = {
     description: "Learn how TaxSolver helps Chartered Accountants, corporate finance teams, and SMEs automate GSTR-2B reconciliation, audit ITC discrepancies, and manage CGST compliance.",
     type: "website",
     url: "https://taxsolver.in/about-us",
+    images: ["/og-image.jpg"],
   }
 };
 
 export default function AboutUsPage() {
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "name": "About TaxSolver",
+    "description": "Learn about TaxSolver's mission, engineering architecture, and leadership team dedicated to automating GST compliance for Indian businesses and CA firms.",
+    "url": "https://taxsolver.in/about-us",
+    "mainEntity": {
+      "@type": "Organization",
+      "name": "TaxSolver",
+      "url": "https://taxsolver.in",
+      "logo": "https://taxsolver.in/logo.png",
+      "founder": {
+        "@type": "Person",
+        "name": "Abhishek Madoliya",
+        "jobTitle": "Lead Tax Technologist & Founder",
+        "email": "abhishekmadoliya@gmail.com",
+        "knowsAbout": [
+          "GST Compliance Law",
+          "GSTR-2B Ingestion Systems",
+          "Automated Input Tax Credit Audit",
+          "FinTech Architecture",
+          "Section 50 CGST Act"
+        ]
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Badarpur",
+        "addressLocality": "New Delhi",
+        "postalCode": "110044",
+        "addressCountry": "IN"
+      },
+      "knowsAbout": [
+        "GSTR-2B Reconciliation",
+        "Rule 88D CGST Compliance",
+        "DRC-01C Automated Reply",
+        "Input Tax Credit Optimization"
+      ]
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-200">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageSchema) }}
+      />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-card/30 to-background border-b border-border/50 py-20 md:py-28 text-left">
@@ -98,8 +146,72 @@ export default function AboutUsPage() {
         </div>
       </section>
 
+      {/* Leadership & E-E-A-T Credentials Section */}
+      <section className="py-20 bg-card/40 border-t border-b border-border text-left">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-[10px] font-bold uppercase tracking-wider text-primary mb-3">
+              <Award className="h-3.5 w-3.5" />
+              E-E-A-T & Leadership
+            </span>
+            <h2 className="text-2xl md:text-4xl font-black font-sans tracking-tight mb-4">
+              Built by Tax Technologists & Compliance Specialists
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Our leadership combines deep Indian taxation domain expertise with modern high-performance cloud engineering.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="border border-border bg-background rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-14 w-14 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-black text-xl">
+                    AM
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">Abhishek Madoliya</h3>
+                    <p className="text-xs text-primary font-semibold">Lead Tax Technologist & Founder</p>
+                    <p className="text-[11px] text-muted-foreground">Specialist in GST Algorithms & GSP Pipelines</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                  Abhishek leads the technology and regulatory architecture at TaxSolver. With extensive background in building automated tax ingestion engines and GSP API integrations, he specializes in fuzzy matching algorithms for invoice numbers and automated Rule 88D notice mitigation.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+                <span className="font-mono">abhishekmadoliya@gmail.com</span>
+                <span className="font-semibold text-foreground">New Delhi, India</span>
+              </div>
+            </div>
+
+            <div className="border border-border bg-background rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-14 w-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 font-black text-xl">
+                    CA
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">Tax Advisory Panel</h3>
+                    <p className="text-xs text-emerald-600 font-semibold">Chartered Accountants & Legal Counsel</p>
+                    <p className="text-[11px] text-muted-foreground">Ex-Big 4 & Senior GST Practitioners</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                  Our software matching models, Section 50 interest logic, and DRC-01C response workflows are verified and audited by practicing Chartered Accountants in India to ensure strict adherence to CBIC circulars and CGST statutory amendments.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>CBIC & GSTN Compliant</span>
+                <span className="font-semibold text-foreground">Active Advisory</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Core Capabilities Grid */}
-      <section className="py-20 bg-muted/20 border-t border-b border-border/50 text-left">
+      <section className="py-20 bg-muted/20 border-b border-border/50 text-left">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center mb-16 max-w-2xl mx-auto">
@@ -112,7 +224,6 @@ export default function AboutUsPage() {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* 1 */}
             <div className="space-y-4">
               <div className="h-10 w-10 border border-border bg-card rounded-lg flex items-center justify-center text-primary shadow-xs">
                 <Search className="h-5 w-5" />
@@ -123,7 +234,6 @@ export default function AboutUsPage() {
               </p>
             </div>
 
-            {/* 2 */}
             <div className="space-y-4">
               <div className="h-10 w-10 border border-border bg-card rounded-lg flex items-center justify-center text-primary shadow-xs">
                 <Lock className="h-5 w-5" />
@@ -134,7 +244,6 @@ export default function AboutUsPage() {
               </p>
             </div>
 
-            {/* 3 */}
             <div className="space-y-4">
               <div className="h-10 w-10 border border-border bg-card rounded-lg flex items-center justify-center text-primary shadow-xs">
                 <Database className="h-5 w-5" />
@@ -145,7 +254,6 @@ export default function AboutUsPage() {
               </p>
             </div>
 
-            {/* 4 */}
             <div className="space-y-4">
               <div className="h-10 w-10 border border-border bg-card rounded-lg flex items-center justify-center text-primary shadow-xs">
                 <Clock className="h-5 w-5" />
@@ -156,7 +264,6 @@ export default function AboutUsPage() {
               </p>
             </div>
 
-            {/* 5 */}
             <div className="space-y-4">
               <div className="h-10 w-10 border border-border bg-card rounded-lg flex items-center justify-center text-primary shadow-xs">
                 <Layers className="h-5 w-5" />
@@ -167,7 +274,6 @@ export default function AboutUsPage() {
               </p>
             </div>
 
-            {/* 6 */}
             <div className="space-y-4">
               <div className="h-10 w-10 border border-border bg-card rounded-lg flex items-center justify-center text-primary shadow-xs">
                 <ShieldCheck className="h-5 w-5" />

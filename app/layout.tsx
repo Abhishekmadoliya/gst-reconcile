@@ -21,19 +21,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://taxsolver.in"),
   title: "GSTR-2B Reconciliation Software for CA Firms in India | TaxSolver",
   description: "India's fastest GSTR-2B reconciliation tool. Match 10,000+ invoices in seconds, auto-chase suppliers, and file GSTR-3B with 100% accurate ITC. Free trial for CA firms.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "GSTR-2B Reconciliation Software for CA Firms in India | TaxSolver",
     description: "India's fastest GSTR-2B reconciliation tool. Match 10,000+ invoices in seconds, auto-chase suppliers, and file GSTR-3B with 100% accurate ITC. Free trial for CA firms.",
     type: "website",
     url: "https://taxsolver.in",
+    siteName: "TaxSolver",
+    locale: "en_IN",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "TaxSolver GST Reconciliation",
+        alt: "TaxSolver GST Reconciliation Platform",
       },
     ],
   },

@@ -3,16 +3,75 @@ import Footer from "@/components/landing/Footer";
 import IntegrationsBar from "@/components/landing/IntegrationsBar";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import Link from "next/link";
-import { ArrowRight, Download, UploadCloud, Zap, LineChart } from "lucide-react";
+import { ArrowRight, Download, UploadCloud, Zap, LineChart, CheckCircle2 } from "lucide-react";
 
 export const metadata = {
   title: "Tally Prime GSTR-2B Reconciliation Software | TaxSolver",
   description: "Seamlessly integrate your Tally Prime purchase register with TaxSolver for automated GSTR-2B reconciliation. No manual column mapping required.",
+  keywords: [
+    "Tally Prime GST reconciliation",
+    "Tally purchase register matching",
+    "GSTR-2B Tally software",
+    "automate Tally GST reconciliation"
+  ],
+  alternates: {
+    canonical: "https://taxsolver.in/integrations/tally",
+  },
+  openGraph: {
+    title: "Tally Prime GSTR-2B Reconciliation Software | TaxSolver",
+    description: "Seamlessly integrate your Tally Prime purchase register with TaxSolver for automated GSTR-2B reconciliation.",
+    type: "website",
+    url: "https://taxsolver.in/integrations/tally",
+    images: ["/og-image.jpg"],
+  }
 };
 
 export default function TallyIntegrationPage() {
+  const howToSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to Reconcile Tally Prime Purchase Register with GSTR-2B",
+    "description": "Step-by-step instructions to export your purchase vouchers from Tally Prime and match them with government GSTR-2B data using TaxSolver.",
+    "totalTime": "PT3M",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "1. Export Purchase Register from Tally Prime",
+        "text": "Open Tally Prime > Display More Reports > Statutory Reports > GST Reports > GSTR-2 or Purchase Register, and export as an Excel (.xlsx) file."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "2. Ingest File into TaxSolver",
+        "text": "Upload the raw Tally spreadsheet into TaxSolver. The intelligent parser automatically detects Tally's column headers without manual mapping."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "3. Run Automated Reconciliation",
+        "text": "TaxSolver pulls live GSTR-2B data via licensed GSP and runs deterministic and fuzzy matching in under 3 minutes."
+      }
+    ]
+  };
+
+  const softwareSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "TaxSolver Tally Prime GST Reconciliation Connector",
+    "operatingSystem": "Web / Windows / Mac",
+    "applicationCategory": "BusinessApplication",
+    "description": "Connector and intelligent parser for Tally Prime purchase registers to match GSTR-2B returns automatically.",
+    "url": "https://taxsolver.in/integrations/tally"
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-200 selection:bg-primary selection:text-primary-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+      />
 
       <main className="flex-1 w-full">
         {/* Tally Hero */}
@@ -84,7 +143,6 @@ export default function TallyIntegrationPage() {
         <TestimonialsSection />
 
       </main>
-
     </div>
   );
 }
