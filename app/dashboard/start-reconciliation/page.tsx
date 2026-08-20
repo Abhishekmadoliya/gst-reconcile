@@ -21,7 +21,11 @@ import {
     AlertCircle,
     ArrowRightLeft,
     X,
-    FileText
+    FileText,
+    Sliders,
+    Sparkles,
+    Check,
+    Wrench
 } from "lucide-react";
 
 interface TaxBreakdown {
@@ -76,6 +80,19 @@ export default function OfflineReconciliationClient() {
     const [processStep, setProcessStep] = useState("");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+    // Template Mismatch Error State
+    const [showMappingModal, setShowMappingModal] = useState(false);
+    const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
+    const [userColumnSearch, setUserColumnSearch] = useState("");
+    const [templateMismatchError, setTemplateMismatchError] = useState<{
+        message: string;
+        missingHeaders: string[];
+        foundHeaders: string[];
+        expectedHeaders: string[];
+        allTemplateHeaders?: string[];
+        templateDownloadUrl: string;
+    } | null>(null);
+
     // Result States
     const [reconData, setReconData] = useState<ReconciliationResponse | null>(null);
     const [filterCategory, setFilterCategory] = useState<string>("");
@@ -117,17 +134,52 @@ export default function OfflineReconciliationClient() {
         }
     };
 
+    
+    // Smart auto-mapping helper
+    const getAutoMatches = (foundHeaders: string[], requiredHeaders: string[]) => {
+        const matches: Record<string, string> = {};
+        const clean = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+        for (const req of requiredHeaders) {
+            const reqClean = clean(req);
+            const found = foundHeaders.find((h) => {
+                const hClean = clean(h);
+                if (hClean === reqClean) return true;
+                if (reqClean.includes("invoiceno") && (hClean.includes("invno") || hClean.includes("invoiceno") || hClean.includes("billno") || hClean.includes("voucherno") || hClean.includes("documentno") || hClean === "inum")) return true;
+                if (reqClean.includes("gstno") && (hClean.includes("gstin") || hClean.includes("gstno") || hClean.includes("gstnumber") || hClean === "ctin")) return true;
+                if (reqClean.includes("vendorname") && (hClean.includes("suppliername") || hClean.includes("partyname") || hClean.includes("vendorname") || hClean.includes("particulars") || hClean === "trdnm" || hClean.includes("supplier") || hClean.includes("party") || hClean.includes("vendor"))) return true;
+                if (reqClean.includes("invoicedate") && (hClean.includes("invdate") || hClean.includes("invoicedate") || hClean.includes("billdate") || hClean.includes("date") || hClean.includes("postingdate"))) return true;
+                if (reqClean.includes("baseamount") && (hClean.includes("taxable") || hClean.includes("baseamount") || hClean.includes("assessable") || hClean === "txval")) return true;
+                if (reqClean.includes("igst") && hClean.includes("igst")) return true;
+                if (reqClean.includes("cgst") && hClean.includes("cgst")) return true;
+                if (reqClean.includes("sgst") && (hClean.includes("sgst") || hClean.includes("utgst"))) return true;
+                if (reqClean.includes("grosssales") && (hClean.includes("gross") || hClean.includes("total") || hClean.includes("invoicevalue") || hClean.includes("invoiceamount"))) return true;
+                return false;
+            });
+            if (found) {
+                matches[req] = found;
+            }
+        }
+        return matches;
+    };
+
     // Run offline reconciliation
-    const handleReconcile = async () => {
+    const handleReconcile = async (overrideMapping?: Record<string, string>) => {
         if (!purchaseFile || !gstr2bFile) return;
 
         setIsProcessing(true);
         setErrorMessage(null);
+        setTemplateMismatchError(null);
         setProcessStep("Uploading spreadsheets...");
+
+        const activeMapping = overrideMapping || columnMapping;
 
         const formData = new FormData();
         formData.append("purchaseRegister", purchaseFile);
         formData.append("gstr2b", gstr2bFile);
+        if (activeMapping && Object.keys(activeMapping).length > 0) {
+            formData.append("columnMapping", JSON.stringify(activeMapping));
+        }
 
         try {
             setTimeout(() => setProcessStep("Parsing Purchase Register & extracting invoices..."), 1000);
@@ -147,11 +199,30 @@ export default function OfflineReconciliationClient() {
             }
         } catch (err: any) {
             console.error(err);
-            setErrorMessage(
-                err.response?.data?.error?.message ||
-                err.message ||
-                "An error occurred while reconciling. Please ensure files are valid formats."
-            );
+            const errorData = err.response?.data?.error;
+
+            if (errorData?.code === "TEMPLATE_MISMATCH") {
+                const found = errorData.foundHeaders || [];
+                const expected = errorData.expectedHeaders || [];
+                setTemplateMismatchError({
+                    message: errorData.message || "Template format mismatch",
+                    missingHeaders: errorData.missingHeaders || [],
+                    foundHeaders: found,
+                    expectedHeaders: expected,
+                    allTemplateHeaders: errorData.allTemplateHeaders || expected,
+                    templateDownloadUrl: errorData.templateDownloadUrl || "/api/offline-reconcile/template",
+                });
+                // Auto-suggest matches
+                const auto = getAutoMatches(found, expected);
+                setColumnMapping((prev) => ({ ...auto, ...prev }));
+                setErrorMessage(null);
+            } else {
+                setErrorMessage(
+                    errorData?.message ||
+                    err.message ||
+                    "An error occurred while reconciling. Please ensure files are valid formats."
+                );
+            }
         } finally {
             setIsProcessing(false);
             setProcessStep("");
@@ -205,6 +276,7 @@ export default function OfflineReconciliationClient() {
         setSearchTerm("");
         setCurrentPage(1);
         setErrorMessage(null);
+        setTemplateMismatchError(null);
     };
 
     // Filter and Search logic
@@ -263,6 +335,63 @@ export default function OfflineReconciliationClient() {
                                 <div className="text-left">
                                     <h4 className="text-sm font-bold text-rose-500">Processing Error</h4>
                                     <p className="text-xs text-muted-foreground mt-1 leading-normal">{errorMessage}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {templateMismatchError && (
+                            <div className="mb-6 rounded-xl border border-amber-500/25 bg-amber-500/5 overflow-hidden">
+                                <div className="p-4 flex items-start gap-3">
+                                    <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                                    <div className="text-left flex-1">
+                                        <h4 className="text-sm font-bold text-amber-500">Template Format Mismatch</h4>
+                                        <p className="text-xs text-muted-foreground mt-1 leading-normal">
+                                            {templateMismatchError.message}
+                                        </p>
+
+                                        {templateMismatchError.missingHeaders.length > 0 && (
+                                            <div className="mt-3">
+                                                <p className="text-[10px] uppercase font-bold text-amber-500 tracking-wider mb-1.5">
+                                                    Missing Required Columns
+                                                </p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {templateMismatchError.missingHeaders.map((header, idx) => (
+                                                        <span
+                                                            key={`missing-${idx}`}
+                                                            className="inline-flex px-2 py-0.5 rounded-md border border-rose-500/20 bg-rose-500/10 text-rose-500 text-[10px] font-semibold"
+                                                        >
+                                                            {header}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="mt-4 flex flex-wrap items-center gap-3">
+                                            <button
+                                                onClick={() => setShowMappingModal(true)}
+                                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold shadow-md shadow-primary/20 hover:bg-primary/90 transition-all cursor-pointer hover:scale-[1.02]"
+                                            >
+                                                <Sliders className="h-3.5 w-3.5" />
+                                                Fix Format & Map Columns
+                                            </button>
+                                            <a
+                                                href={`${API_URL}${templateMismatchError.templateDownloadUrl}`}
+                                                download
+                                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-semibold shadow-sm transition-colors"
+                                            >
+                                                <FileDown className="h-3.5 w-3.5" />
+                                                Download Correct Template
+                                            </a>
+                                            <button
+                                                onClick={() => setTemplateMismatchError(null)}
+                                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-muted-foreground transition-colors cursor-pointer"
+                                            >
+                                                <X className="h-3.5 w-3.5" />
+                                                Dismiss
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -350,7 +479,7 @@ export default function OfflineReconciliationClient() {
                         {/* Run Action */}
                         <div className="flex justify-center">
                             <button
-                                onClick={handleReconcile}
+                                onClick={() => handleReconcile()}
                                 disabled={!purchaseFile || !gstr2bFile}
                                 className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/25 hover:bg-primary/95 disabled:opacity-50 disabled:shadow-none hover:translate-y-[-1px] transition-all cursor-pointer animate-pulse"
                             >
@@ -897,6 +1026,228 @@ export default function OfflineReconciliationClient() {
                     </div>
                 </div>
             )}
-        </div>
+        
+            {/* ========================================================
+                AUTO-FIX COLUMN MAPPING MODAL
+                ======================================================== */}
+            {showMappingModal && templateMismatchError && (
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200 print:hidden">
+                    <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden text-left">
+                        
+                        {/* Modal Header */}
+                        <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-muted/20">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+                                    <Sliders className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                                        Fix Purchase Register Column Mapping
+                                        <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold">
+                                            Auto-Fix
+                                        </span>
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Match each required template field to the corresponding column found in your uploaded file.
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowMappingModal(false)}
+                                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body: Two Columns */}
+                        <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-border">
+                            
+                            {/* Left Panel: Detected Columns in User File */}
+                            <div className="md:col-span-4 p-5 flex flex-col bg-muted/10 overflow-hidden">
+                                <div className="mb-3">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                                            Your File Columns
+                                        </h4>
+                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                            {templateMismatchError.foundHeaders.length} found
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                        Columns detected in <strong>{purchaseFile?.name || "uploaded file"}</strong>
+                                    </p>
+                                </div>
+
+                                {/* Column search */}
+                                <div className="relative mb-3">
+                                    <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search detected columns..."
+                                        value={userColumnSearch}
+                                        onChange={(e) => setUserColumnSearch(e.target.value)}
+                                        className="w-full pl-8 pr-3 py-1.5 text-xs bg-background border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+                                    />
+                                </div>
+
+                                {/* Detected column chips */}
+                                <div className="flex-1 overflow-y-auto pr-1 space-y-1.5 max-h-[380px]">
+                                    {templateMismatchError.foundHeaders
+                                        .filter((col) => !userColumnSearch || col.toLowerCase().includes(userColumnSearch.toLowerCase()))
+                                        .map((col, idx) => {
+                                            const isUsed = Object.values(columnMapping).includes(col);
+                                            const mappedTo = Object.entries(columnMapping).find(([_, v]) => v === col)?.[0];
+
+                                            return (
+                                                <div
+                                                    key={`user-col-${idx}`}
+                                                    className={`p-2 rounded-lg border text-xs flex items-center justify-between transition-colors ${
+                                                        isUsed
+                                                            ? "border-emerald-500/30 bg-emerald-500/5 text-foreground"
+                                                            : "border-border bg-card hover:bg-muted/40 text-muted-foreground"
+                                                    }`}
+                                                >
+                                                    <span className="font-mono truncate max-w-[160px] font-medium" title={col}>
+                                                        {col}
+                                                    </span>
+                                                    {isUsed && (
+                                                        <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 truncate max-w-[90px]" title={`Mapped to ${mappedTo}`}>
+                                                            {mappedTo}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            </div>
+
+                            {/* Right Panel: Template Mapping Form */}
+                            <div className="md:col-span-8 p-5 flex flex-col overflow-hidden">
+                                
+                                <div className="flex items-center justify-between mb-3 pb-2 border-b border-border">
+                                    <div>
+                                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider">
+                                            Required Template Fields
+                                        </h4>
+                                        <p className="text-[11px] text-muted-foreground">
+                                            Select the matching column from your spreadsheet for each template field.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => {
+                                                const auto = getAutoMatches(
+                                                    templateMismatchError.foundHeaders,
+                                                    templateMismatchError.expectedHeaders
+                                                );
+                                                setColumnMapping(auto);
+                                            }}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-md transition-colors cursor-pointer"
+                                        >
+                                            <Sparkles className="h-3 w-3" />
+                                            Auto-Suggest
+                                        </button>
+                                        <button
+                                            onClick={() => setColumnMapping({})}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted border border-border rounded-md transition-colors cursor-pointer"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Mapping list */}
+                                <div className="flex-1 overflow-y-auto pr-2 space-y-3 max-h-[380px]">
+                                    {templateMismatchError.expectedHeaders.map((tplHeader, idx) => {
+                                        const selected = columnMapping[tplHeader] || "";
+                                        const isMissingFromUpload = templateMismatchError.missingHeaders.includes(tplHeader);
+
+                                        return (
+                                            <div
+                                                key={`tpl-field-${idx}`}
+                                                className={`p-3 rounded-xl border transition-all ${
+                                                    selected
+                                                        ? "border-border bg-card"
+                                                        : isMissingFromUpload
+                                                        ? "border-amber-500/30 bg-amber-500/5"
+                                                        : "border-border bg-card"
+                                                }`}
+                                            >
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-semibold text-xs text-foreground">
+                                                            {tplHeader}
+                                                        </span>
+                                                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                                                            Required
+                                                        </span>
+                                                        {selected && (
+                                                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-500">
+                                                                <Check className="h-3 w-3" /> Mapped
+                                                            </span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Dropdown selector */}
+                                                    <div className="w-full sm:w-64">
+                                                        <select
+                                                            value={selected}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                setColumnMapping((prev) => ({
+                                                                    ...prev,
+                                                                    [tplHeader]: val,
+                                                                }));
+                                                            }}
+                                                            className="w-full px-3 py-1.5 text-xs bg-background border border-border rounded-lg text-foreground focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+                                                        >
+                                                            <option value="">-- Select matching column --</option>
+                                                            {templateMismatchError.foundHeaders.map((userCol, uIdx) => (
+                                                                <option key={`opt-${uIdx}`} value={userCol}>
+                                                                    {userCol}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 border-t border-border bg-muted/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div className="text-xs text-muted-foreground">
+                                {Object.keys(columnMapping).filter(k => columnMapping[k]).length} of {templateMismatchError.expectedHeaders.length} columns mapped
+                            </div>
+                            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                                <button
+                                    onClick={() => setShowMappingModal(false)}
+                                    className="flex-1 sm:flex-none px-4 py-2 text-xs font-semibold border border-border bg-card hover:bg-muted text-muted-foreground rounded-lg transition-colors cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowMappingModal(false);
+                                        handleReconcile(columnMapping);
+                                    }}
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-5 py-2 text-xs font-bold rounded-lg bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/95 transition-all cursor-pointer"
+                                >
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    Fix Purchase Register & Reconcile
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            )}
+
+</div>
     );
 }
