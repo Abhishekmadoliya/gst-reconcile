@@ -6,7 +6,7 @@ export default function TargetAudienceSection() {
       icon: <Building2 className="h-6 w-6 text-primary" />,
       title: "CA Firms",
       painPoint: "Managing 30+ client GSTINs across different ERPs.",
-      solution: "Multi-client dashboard, standardized import from Tally/Zoho/Busy, and automated supplier chasing to save 120+ billable hours."
+      solution: "Multi-client dashboard, standardized import from Tally/Zoho/Busy, and automated supplier discrepancy schedules to eliminate repetitive manual VLOOKUPs."
     },
     {
       icon: <Briefcase className="h-6 w-6 text-primary" />,

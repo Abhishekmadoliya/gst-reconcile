@@ -1,9 +1,23 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import TaxSolverLogo from "../logos/v1";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+
+  // Hide the marketing footer on dashboard workspace and auth pages
+  if (
+    pathname?.startsWith("/dashboard") ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/onboarding"
+  ) {
+    return null;
+  }
 
   return (
     <footer className="bg-card border-t border-border mt-auto transition-colors duration-200">
@@ -34,8 +48,9 @@ export default function Footer() {
                 <li><Link href="/free-tools/itc-calculator" className="text-muted-foreground hover:text-foreground transition-colors">ITC Penalty Calculator</Link></li>
                 <li><Link href="/gst-due-date-calender" className="text-muted-foreground hover:text-foreground transition-colors">Due Date Calendar</Link></li>
                 <li><Link href="/gst-late-fee-calculator" className="text-muted-foreground hover:text-foreground transition-colors">Late Fee Calculator</Link></li>
+                <li><Link href="/invoice-generator" className="text-muted-foreground hover:text-foreground transition-colors">Free Invoice Generator</Link></li>
                 <li><Link href="/integrations/tally" className="text-muted-foreground hover:text-foreground transition-colors">Tally Integration</Link></li>
-                <li><Link href="/#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
+                <li><Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
               </ul>
             </div>
 

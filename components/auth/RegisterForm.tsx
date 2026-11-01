@@ -3,21 +3,21 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/config";
-import { Eye, EyeOff, Lock, Mail, Building, User, AlertCircle, ArrowRight, Loader2, Check } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User, Phone, ArrowRight, Loader2, MessageSquare, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
+import { authClient } from "@/lib/auth-client";
 
 export default function RegisterForm() {
   const router = useRouter();
 
-  const [firmName, setFirmName] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ssoInfo, setSsoInfo] = useState<string | null>(null);
 
   // Password Validation States
   const [passwordRules, setPasswordRules] = useState({
@@ -42,7 +42,6 @@ export default function RegisterForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setSsoInfo(null);
 
     if (!isPasswordValid) {
       setError("Please satisfy all password safety criteria.");
@@ -57,7 +56,12 @@ export default function RegisterForm() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ firmName, name, email, password }),
+        body: JSON.stringify({ 
+          name, 
+          email, 
+          password,
+          phone: phone.trim() ? phone.trim() : undefined,
+        }),
       });
 
       const data = await response.json();
@@ -75,8 +79,8 @@ export default function RegisterForm() {
       // Update the client-side Zustand store immediately to prevent layout flickering
       useAuthStore.getState().setAuth(userProfile);
 
-      // Success redirect to home since backend also logs us in
-      router.push("/");
+      // Route straight to the 3-step rapid onboarding flow
+      router.push("/onboarding");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred during registration.");
     } finally {
@@ -84,65 +88,51 @@ export default function RegisterForm() {
     }
   };
 
-  const handleGoogleSSO = () => {
-    setSsoInfo("Google Workspace SSO integration is currently disabled in Sandbox. Please use email credentials.");
+  const handleGoogleSSO = async () => {
+    setIsLoading(true);
     setError(null);
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/onboarding`,
+      });
+    } catch (err: any) {
+      setError(err?.message || "Failed to initialize Google SSO. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-sm space-y-5">
+    <div className="w-full max-w-sm space-y-6">
       
-      {/* Title */}
-      <div className="space-y-1">
-        <h2 className="text-xl font-bold font-sans text-foreground tracking-tight">
-          Create CA Firm Portfolio
+      {/* Header */}
+      <div className="space-y-1.5 text-left">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider mb-1">
+          <Sparkles className="h-3 w-3" />
+          14-Day Free Trial &bull; Practitioner Plan (₹0)
+        </div>
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
+          Create CA Firm Account
         </h2>
-        <p className="text-xs text-muted-foreground">
-          Register your accounting firm to initialize automated GSTR-2B audits.
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Enroll free with full <strong>Practitioner Tier</strong> access (up to 5 Client GSTINs &amp; 3,000 monthly invoices). No credit card required.
         </p>
       </div>
 
-      {/* Notifications */}
+      {/* Error Banner */}
       {error && (
-        <div className="p-3 rounded-lg border border-alert/20 bg-alert-bg text-alert text-xs flex items-start gap-2 leading-relaxed">
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-          <span>{error}</span>
+        <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-md">
+          {error}
         </div>
       )}
 
-      {ssoInfo && (
-        <div className="p-3 rounded-lg border border-info/20 bg-info-bg text-info text-xs flex items-start gap-2 leading-relaxed">
-          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-          <span>{ssoInfo}</span>
-        </div>
-      )}
-
-      {/* Auth Form */}
-      <form onSubmit={handleSubmit} className="space-y-3.5">
+      {/* Registration Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
         
-        {/* Firm Name */}
+        {/* Full Name */}
         <div className="space-y-1.5 text-left">
           <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Firm Name / Company Name
-          </label>
-          <div className="relative">
-            <Building className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Sharma & Associates"
-              value={firmName}
-              onChange={(e) => setFirmName(e.target.value)}
-              disabled={isLoading}
-              className="w-full pl-10 pr-4 py-2 border border-border bg-background text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-primary text-foreground disabled:opacity-50"
-              required
-            />
-          </div>
-        </div>
-
-        {/* Owner's Name */}
-        <div className="space-y-1.5 text-left">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Owner's Name / Administrator
+            Full Name
           </label>
           <div className="relative">
             <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -158,7 +148,7 @@ export default function RegisterForm() {
           </div>
         </div>
 
-        {/* Email Address */}
+        {/* Work Email Address */}
         <div className="space-y-1.5 text-left">
           <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Work Email Address
@@ -167,7 +157,7 @@ export default function RegisterForm() {
             <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <input
               type="email"
-              placeholder="sharma@firm.com"
+              placeholder="name@firm.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
@@ -180,7 +170,7 @@ export default function RegisterForm() {
         {/* Password */}
         <div className="space-y-1.5 text-left">
           <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Choose Password
+            Password
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -205,7 +195,7 @@ export default function RegisterForm() {
 
           {/* Dynamic Password Criteria Checklist */}
           {password.length > 0 && (
-            <div className="p-3 bg-muted/40 border border-border rounded-lg space-y-2 mt-2">
+            <div className="p-2.5 bg-muted/40 border border-border rounded-lg space-y-1.5 mt-2">
               <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Password Requirements:</div>
               <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
                 <div className="flex items-center gap-1.5">
@@ -229,6 +219,32 @@ export default function RegisterForm() {
           )}
         </div>
 
+        {/* WhatsApp Phone Number (Optional with clear notice) */}
+        <div className="space-y-1.5 text-left">
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Mobile Number <span className="font-normal text-muted-foreground/70 lowercase">(optional)</span>
+            </label>
+            <span className="flex items-center gap-1 text-[9px] text-emerald-600 dark:text-emerald-400 font-medium">
+              <MessageSquare className="h-3 w-3" /> WhatsApp Alerts
+            </span>
+          </div>
+          <div className="relative">
+            <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              type="tel"
+              placeholder="+91 98765 43210"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              disabled={isLoading}
+              className="w-full pl-10 pr-4 py-2 border border-border bg-background text-sm rounded-md focus:outline-none focus:ring-1 focus:ring-primary text-foreground disabled:opacity-50"
+            />
+          </div>
+          <p className="text-[10px] text-muted-foreground leading-tight">
+            Only needed if you want instant WhatsApp discrepancy notices for supplier follow-up. We never share or spam.
+          </p>
+        </div>
+
         {/* Submit */}
         <button
           type="submit"
@@ -237,11 +253,11 @@ export default function RegisterForm() {
         >
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Initializing Firm Space
+              <Loader2 className="h-4 w-4 animate-spin" /> Initializing Account...
             </>
           ) : (
             <>
-              Register Firm <ArrowRight className="h-4 w-4" />
+              Continue to Onboarding <ArrowRight className="h-4 w-4" />
             </>
           )}
         </button>
@@ -249,13 +265,13 @@ export default function RegisterForm() {
       </form>
 
       {/* Divider */}
-      <div className="relative flex py-1.5 items-center">
+      <div className="relative flex py-1 items-center">
         <div className="flex-grow border-t border-border"></div>
         <span className="flex-shrink mx-3 text-[10px] uppercase font-bold tracking-wider text-muted-foreground">or</span>
         <div className="flex-grow border-t border-border"></div>
       </div>
 
-      {/* Google SSO Button (Mock) */}
+      {/* Google SSO Button */}
       <button
         onClick={handleGoogleSSO}
         disabled={isLoading}
@@ -279,12 +295,12 @@ export default function RegisterForm() {
             d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.39 0 3.33 2.46 1.31 6.39l4.19 3.23c.92-2.74 3.48-4.78 6.5-4.78z"
           />
         </svg>
-        Register with Google (SSO)
+        Sign in with Google
       </button>
 
       {/* Switch Link */}
       <p className="text-xs text-center text-muted-foreground">
-        Already have a firm profile?{" "}
+        Already have an account?{" "}
         <Link href="/login" className="font-semibold text-primary hover:text-primary/95 underline transition-colors">
           Log In
         </Link>

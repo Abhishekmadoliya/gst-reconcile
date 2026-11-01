@@ -1,6 +1,6 @@
 "use client";
+import SetupChecklist from "./SetupChecklist";
 
-import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useDashboardStore } from "@/store/useDashboardStore";
@@ -16,13 +16,6 @@ import {
   ArrowRight,
   FileSpreadsheet,
   AlertCircle,
-  Terminal,
-  Copy,
-  Trash2,
-  Play,
-  Pause,
-  Cpu,
-  Server
 } from "lucide-react";
 import {
   AreaChart,
@@ -44,7 +37,7 @@ interface OverviewTabProps {
 export default function OverviewTab({ setActiveTab, setSelectedJobId, selectedGstinId }: OverviewTabProps) {
   const router = useRouter();
   const store = useDashboardStore();
-  
+
   const activeGstinId = selectedGstinId !== undefined && selectedGstinId !== null ? selectedGstinId : store.selectedGstinId;
   const activeSetJobId = setSelectedJobId || store.setSelectedJobId;
   // 1. Fetch GSTIN list
@@ -103,149 +96,18 @@ export default function OverviewTab({ setActiveTab, setSelectedJobId, selectedGs
   // Graph Data
   const chartData = itcSummary.length > 0
     ? [...itcSummary].reverse().map((item: any) => ({
-        name: formatPeriod(item.period),
-        "Matched ITC": item.itcMatched,
-        "At-Risk ITC": item.itcAtRisk,
-        "Unclaimed ITC": item.itcUnclaimed,
-      }))
+      name: formatPeriod(item.period),
+      "Matched ITC": item.itcMatched,
+      "At-Risk ITC": item.itcAtRisk,
+      "Unclaimed ITC": item.itcUnclaimed,
+    }))
     : [
-        { name: "Jan 2026", "Matched ITC": 450000, "At-Risk ITC": 120000, "Unclaimed ITC": 25000 },
-        { name: "Feb 2026", "Matched ITC": 520000, "At-Risk ITC": 98000, "Unclaimed ITC": 30000 },
-        { name: "Mar 2026", "Matched ITC": 610000, "At-Risk ITC": 140000, "Unclaimed ITC": 15000 },
-        { name: "Apr 2026", "Matched ITC": 580000, "At-Risk ITC": 75000, "Unclaimed ITC": 42000 },
-        { name: "May 2026", "Matched ITC": 650000, "At-Risk ITC": 115000, "Unclaimed ITC": 20000 },
-      ];
-
-  // Terminal Logs State & Streamer
-  const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
-  const [terminalInput, setTerminalInput] = useState("");
-  const [autoScroll, setAutoScroll] = useState(true);
-  const terminalEndRef = useRef<HTMLDivElement>(null);
-
-  const addTerminalLog = (msg: string) => {
-    setTerminalLogs((prev) => [...prev, msg]);
-  };
-
-  useEffect(() => {
-    if (autoScroll && terminalEndRef.current) {
-      terminalEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [terminalLogs, autoScroll]);
-
-  // Context Switch Log Streaming
-  useEffect(() => {
-    if (!activeGstinId) return;
-
-    const gstinNum = activeClient?.gstin || "UNKNOWN";
-    const gstinName = activeClient?.tradeName || activeClient?.legalName || "Unnamed Business";
-
-    // Setup initial sequence
-    const bootSequence = [
-      `[SYS] ${new Date().toISOString().replace('T', ' ').substring(0, 19)} - INITIALIZING AUDIT DAEMON V1.0...`,
-      `[SYS] ESTABLISHING DB INTEGRITY CHECK: POSTGRESQL POOL COMPLIANT.`,
-      `[SYS] CONNECTING TO REDIS DB HOST: 127.0.0.1:6379... READY.`,
-      `[QUEUE] BULLMQ COMPLIANCE WORKER LISTENING ON QUEUE 'reconcile-queue'...`,
-      `[SYS] CONTEXT SWITCH -> GSTIN: ${gstinNum} [${gstinName}]`,
-      activeClient?.status === "connected"
-        ? `[INFO] GSP Sandbox Link status: ACTIVE & ENCRYPTED.`
-        : `[WARN] GSP Sandbox Link status: PENDING LINK (Linking GSP Sandbox credentials recommended).`
+      { name: "Jan 2026", "Matched ITC": 450000, "At-Risk ITC": 120000, "Unclaimed ITC": 25000 },
+      { name: "Feb 2026", "Matched ITC": 520000, "At-Risk ITC": 98000, "Unclaimed ITC": 30000 },
+      { name: "Mar 2026", "Matched ITC": 610000, "At-Risk ITC": 140000, "Unclaimed ITC": 15000 },
+      { name: "Apr 2026", "Matched ITC": 580000, "At-Risk ITC": 75000, "Unclaimed ITC": 42000 },
+      { name: "May 2026", "Matched ITC": 650000, "At-Risk ITC": 115000, "Unclaimed ITC": 20000 },
     ];
-
-    if (latestJob) {
-      const matchPctVal = matchedPct.toFixed(1);
-      const totalInvCount = (latestJob.summary?.matchedCount || 0) +
-        (latestJob.summary?.amountMismatchCount || 0) +
-        (latestJob.summary?.inBooksNot2bCount || 0) +
-        (latestJob.summary?.in2bNotBooksCount || 0);
-
-      bootSequence.push(
-        `[QUEUE] JOB DETECTED IN HISTORY: ID = ${latestJob.id.slice(0, 8)}`,
-        `[WORKER] STEP 1: PARSING PURCHASE REGISTER SHEET...`,
-        `[WORKER] SUCCESS: PARSED ${totalInvCount} TRANSACTION RECORDS.`,
-        `[WORKER] STEP 2: RETRIEVING CACHED GSTR-2B DATA FROM SANDBOX API...`,
-        `[WORKER] CACHE HIT: FOUND ${latestJob.summary?.matchedCount + latestJob.summary?.amountMismatchCount + latestJob.summary?.in2bNotBooksCount || 0} INVOICES IN PORTAL LOGS.`,
-        `[WORKER] STEP 3: EXECUTING RECONCILIATION MATCHING PROCESS...`,
-        `[WORKER]   -> MATCHED   : ${latestJob.summary?.matchedCount || 0} ROWS`,
-        `[WORKER]   -> MISMATCHES: ${latestJob.summary?.amountMismatchCount || 0} ROWS`,
-        `[WORKER]   -> BOOKS ONLY: ${latestJob.summary?.inBooksNot2bCount || 0} ROWS`,
-        `[WORKER]   -> PORTAL 2B : ${latestJob.summary?.in2bNotBooksCount || 0} ROWS`,
-        `[WORKER] STEP 4: BULK INSERTING RECON RESULT ROWS IN BATCHES... DONE.`,
-        `[WORKER] STEP 5: UPDATING JOB SUMMARY TELEMETRY...`,
-        `[SYS] COMPLIANCE RUN COMPLETED. MATCH RATE: ${matchPctVal}%.`
-      );
-    } else {
-      bootSequence.push(
-        `[INFO] No completed reconciliation jobs logged for this client yet.`
-      );
-    }
-
-    bootSequence.push(
-      `[SYS] SYSTEM STEADY. ENTER 'help' IN CLIENT CLI PROMPT BELOW FOR COMMAND UTILITIES.`
-    );
-
-    // Stream logs
-    setTerminalLogs([bootSequence[0]]);
-    let idx = 1;
-    let timer: NodeJS.Timeout;
-
-    const streamNext = () => {
-      if (idx < bootSequence.length) {
-        const nextLog = bootSequence[idx];
-        setTerminalLogs((prev) => [...prev, nextLog]);
-        idx++;
-        timer = setTimeout(streamNext, 120);
-      }
-    };
-
-    timer = setTimeout(streamNext, 150);
-
-    return () => clearTimeout(timer);
-  }, [activeGstinId, activeClient, latestJob, matchedPct]);
-
-  const handleCommandSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanCmd = terminalInput.trim().toLowerCase();
-    if (!cleanCmd) return;
-
-    addTerminalLog(`$ ${terminalInput}`);
-    setTerminalInput("");
-
-    setTimeout(() => {
-      switch (cleanCmd) {
-        case "help":
-          addTerminalLog("  status   - Get active GSTIN compliance context");
-          addTerminalLog("  diagnose - Run connection and database diagnostics");
-          addTerminalLog("  clear    - Clear the terminal screen");
-          addTerminalLog("  rebuild  - Re-initialize matching engine memory cache index");
-          break;
-        case "status":
-          addTerminalLog("[SYS] GSTIN CONTEXT STATUS:");
-          addTerminalLog(`  Active GSTIN : ${activeClient?.gstin || "NONE"}`);
-          addTerminalLog(`  Trade Name   : ${activeClient?.tradeName || "N/A"}`);
-          addTerminalLog(`  Filing Status: ${activeClient?.status === "connected" ? "Linked (Handshake: OK)" : "Offline (Unlinked)"}`);
-          addTerminalLog(`  Total Jobs   : ${recentJobs.length} audit runs recorded`);
-          break;
-        case "diagnose":
-          addTerminalLog("[DIAG] INITIATING TELEMETRY DIAGNOSTICS SUITE...");
-          addTerminalLog("[DIAG] DATABASE ENGINE  : OK (PostgreSQL connected - active pool 5)");
-          addTerminalLog("[DIAG] CACHE REPOSITORY : OK (Redis cache active - 0.45 MB)");
-          addTerminalLog("[DIAG] WORKER DAEMON    : HEALTHY (BullMQ daemon status: IDLE)");
-          addTerminalLog("[DIAG] GSP PORTAL CHECK : OK (Sandbox GSP API keys verified)");
-          addTerminalLog("[DIAG] AUDITING DAEMON FULLY COMPLIANT AND ONLINE.");
-          break;
-        case "clear":
-          setTerminalLogs([]);
-          break;
-        case "rebuild":
-          addTerminalLog(`[SYS] FLUSHING CACHED MATCHING INDICES FOR GSTIN [${activeClient?.gstin || "ACTIVE"}]...`);
-          addTerminalLog("[SYS] RE-HASHING TRANSACTION LEDGERS... DONE");
-          addTerminalLog("[SYS] MATCHING ENGINE CACHE FULLY REBUILT AND OPTIMIZED.");
-          break;
-        default:
-          addTerminalLog(`Command not recognized: '${cleanCmd}'. Type 'help' for options.`);
-      }
-    }, 80);
-  };
 
   const isLoading = isGstinsLoading || isAnalyticsLoading || (isJobsLoading && !!activeGstinId);
 
@@ -260,7 +122,8 @@ export default function OverviewTab({ setActiveTab, setSelectedJobId, selectedGs
 
   return (
     <div className="space-y-4">
-      
+      <SetupChecklist setActiveTab={setActiveTab} />
+
       {/* Top Notification if GSP not linked for active client */}
       {activeClient && activeClient.status !== "connected" && (
         <div className="p-3.5 bg-warn-bg text-warn border border-warn/15 rounded-sm flex items-center justify-between gap-3 text-xs leading-normal">
@@ -282,11 +145,10 @@ export default function OverviewTab({ setActiveTab, setSelectedJobId, selectedGs
               GSP Link Status
             </p>
             <h3 className="text-base font-bold font-sans text-foreground mt-2 flex items-center gap-1.5 uppercase tracking-wide">
-              <span className={`h-2 w-2 rounded-full shrink-0 ${
-                activeClient?.status === "connected"
+              <span className={`h-2 w-2 rounded-full shrink-0 ${activeClient?.status === "connected"
                   ? "bg-compliance-success shadow-[0_0_4px_var(--compliance-success)]"
                   : "bg-muted-foreground/45"
-              }`} />
+                }`} />
               {activeClient?.status || "Pending"}
             </h3>
           </div>
@@ -394,25 +256,25 @@ export default function OverviewTab({ setActiveTab, setSelectedJobId, selectedGs
               <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorMatched" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorAtRisk" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#fbbf24" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#fbbf24" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} />
-                <YAxis 
-                  stroke="#64748b" 
-                  fontSize={9} 
-                  tickLine={false} 
+                <YAxis
+                  stroke="#64748b"
+                  fontSize={9}
+                  tickLine={false}
                   axisLine={false}
-                  tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} 
+                  tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`}
                 />
-                <Tooltip 
-                  formatter={(value: any) => [formatINR(value), ""]} 
+                <Tooltip
+                  formatter={(value: any) => [formatINR(value), ""]}
                   contentStyle={{ backgroundColor: "var(--card)", borderColor: "var(--border)", borderRadius: "2px", color: "var(--foreground)", fontSize: "10px" }}
                 />
                 <Legend verticalAlign="top" height={28} />
@@ -451,7 +313,7 @@ export default function OverviewTab({ setActiveTab, setSelectedJobId, selectedGs
                 {recentJobs.map((job: any) => {
                   const matchedCount = job.summary?.matchedCount || 0;
                   const totalInvoices = matchedCount + (job.summary?.amountMismatchCount || 0) + (job.summary?.inBooksNot2bCount || 0) + (job.summary?.in2bNotBooksCount || 0);
-                  
+
                   return (
                     <div
                       key={job.id}
@@ -461,19 +323,17 @@ export default function OverviewTab({ setActiveTab, setSelectedJobId, selectedGs
                           router.push(`/dashboard/reconcile/${job.id}`);
                         }
                       }}
-                      className={`p-2 border border-border rounded-sm text-left transition-all ${
-                        job.status === "done" ? "hover:border-primary cursor-pointer bg-muted/10 hover:bg-muted/30" : "bg-muted/5"
-                      }`}
+                      className={`p-2 border border-border rounded-sm text-left transition-all ${job.status === "done" ? "hover:border-primary cursor-pointer bg-muted/10 hover:bg-muted/30" : "bg-muted/5"
+                        }`}
                     >
                       <div className="flex justify-between items-center text-[10px]">
                         <span className="font-bold font-mono">{formatPeriod(job.period)}</span>
-                        <span className={`text-[8px] font-bold px-1 rounded-sm border ${
-                          job.status === "done"
+                        <span className={`text-[8px] font-bold px-1 rounded-sm border ${job.status === "done"
                             ? "bg-compliance-success-bg text-compliance-success border-success/15"
                             : job.status === "failed"
-                            ? "bg-compliance-alert-bg text-compliance-alert border-alert/15"
-                            : "bg-compliance-info-bg text-compliance-info border-info/15 animate-pulse"
-                        }`}>
+                              ? "bg-compliance-alert-bg text-compliance-alert border-alert/15"
+                              : "bg-compliance-info-bg text-compliance-info border-info/15 animate-pulse"
+                          }`}>
                           {job.status}
                         </span>
                       </div>
@@ -494,89 +354,6 @@ export default function OverviewTab({ setActiveTab, setSelectedJobId, selectedGs
             Upload Ledger <ArrowRight className="h-3 w-3" />
           </button>
         </div>
-      </div>
-
-      {/* Audit Processor Terminal */}
-      <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-sm font-mono text-[11px] text-zinc-300 select-none shadow-lg mt-4 flex flex-col h-72">
-        {/* Terminal Header */}
-        <div className="flex items-center justify-between pb-2.5 border-b border-zinc-800 shrink-0">
-          <div className="flex items-center gap-2">
-            <Terminal className="h-4 w-4 text-emerald-400" />
-            <span className="font-extrabold tracking-wider uppercase text-zinc-100 text-[10px]">
-              AUDIT PROCESSOR TELEMETRY TERMINAL
-            </span>
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(terminalLogs.join("\n"));
-                alert("Terminal logs copied to clipboard!");
-              }}
-              className="px-2 py-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-zinc-800 rounded-sm cursor-pointer transition-all flex items-center gap-1"
-              title="Copy terminal logs"
-            >
-              <Copy className="h-3 w-3" /> Copy
-            </button>
-            <button
-              onClick={() => setTerminalLogs([])}
-              className="px-2 py-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-zinc-800 rounded-sm cursor-pointer transition-all flex items-center gap-1"
-              title="Clear terminal logs"
-            >
-              <Trash2 className="h-3 w-3" /> Clear
-            </button>
-            <button
-              onClick={() => setAutoScroll(!autoScroll)}
-              className={`px-2 py-1 border rounded-sm cursor-pointer transition-all ${
-                autoScroll
-                  ? "bg-emerald-950/20 border-emerald-900/50 text-emerald-400"
-                  : "border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
-              }`}
-              title="Toggle autoscroll"
-            >
-              Autoscroll: {autoScroll ? "ON" : "OFF"}
-            </button>
-          </div>
-        </div>
-
-        {/* Terminal Body */}
-        <div className="flex-1 overflow-y-auto py-3 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
-          {terminalLogs.map((log, idx) => {
-            if (!log) return null;
-            let colorClass = "text-zinc-300";
-            if (log.startsWith("[SYS]")) colorClass = "text-zinc-400";
-            else if (log.startsWith("[INFO]")) colorClass = "text-cyan-400";
-            else if (log.startsWith("[WARN]")) colorClass = "text-amber-500";
-            else if (log.startsWith("[ERROR]")) colorClass = "text-rose-500 font-bold";
-            else if (log.startsWith("[QUEUE]")) colorClass = "text-violet-400";
-            else if (log.startsWith("[WORKER]")) colorClass = "text-emerald-400";
-            else if (log.startsWith("[DIAG]")) colorClass = "text-teal-400";
-            else if (log.startsWith("$")) colorClass = "text-zinc-100 font-bold";
-
-            return (
-              <div key={idx} className={`${colorClass} leading-relaxed whitespace-pre-wrap select-text`}>
-                {log}
-              </div>
-            );
-          })}
-          <div ref={terminalEndRef} />
-        </div>
-
-        {/* Terminal Input */}
-        <form onSubmit={handleCommandSubmit} className="flex items-center gap-2 pt-2 border-t border-zinc-800 shrink-0">
-          <span className="text-emerald-400 font-bold">$</span>
-          <input
-            type="text"
-            value={terminalInput}
-            onChange={(e) => setTerminalInput(e.target.value)}
-            placeholder="Type 'help' for diagnostics commands..."
-            className="flex-1 bg-transparent text-zinc-200 border-none outline-none focus:ring-0 p-0 text-[11px] font-mono placeholder:text-zinc-600 select-text"
-          />
-        </form>
       </div>
     </div>
   );

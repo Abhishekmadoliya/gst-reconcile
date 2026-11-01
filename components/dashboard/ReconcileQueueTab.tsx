@@ -18,8 +18,11 @@ import {
   Play,
   ArrowRight,
   History,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Sliders,
+  Sparkles,
 } from "lucide-react";
+import { ERP_PRESETS, getErpPresetById } from "@/lib/erp-presets";
 
 interface ReconcileQueueTabProps {
   setActiveTab?: (tab: string) => void;
@@ -49,6 +52,7 @@ export default function ReconcileQueueTab({ setActiveTab, setSelectedJobId, sele
   const [selectedMonth, setSelectedMonth] = useState("04");
   const [selectedYear, setSelectedYear] = useState("2026");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedErpPreset, setSelectedErpPreset] = useState("auto");
 
   // App states
   const [isUploading, setIsUploading] = useState(false);
@@ -215,6 +219,12 @@ export default function ReconcileQueueTab({ setActiveTab, setSelectedJobId, sele
     formData.append("gstinId", activeGstinId);
     formData.append("period", period);
     formData.append("purchaseRegister", selectedFile);
+    if (selectedErpPreset !== "auto") {
+      formData.append(
+        "columnMapping",
+        JSON.stringify(getErpPresetById(selectedErpPreset).mappings)
+      );
+    }
 
     try {
       const res = await api.post(`${API_URL}/api/reconcile`, formData, {
@@ -311,6 +321,38 @@ export default function ReconcileQueueTab({ setActiveTab, setSelectedJobId, sele
                     ))}
                   </select>
                 </div>
+              </div>
+            </div>
+
+            {/* ERP Source Preset Selector */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[8px] font-extrabold uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                  <Sliders className="h-3 w-3 text-primary" /> ERP Source Preset
+                </label>
+                <span className="text-[9px] text-muted-foreground font-mono">
+                  {getErpPresetById(selectedErpPreset).exportFormat}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                {ERP_PRESETS.map((p) => {
+                  const isSelected = selectedErpPreset === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedErpPreset(p.id)}
+                      className={`px-2 py-1.5 text-[9px] font-bold uppercase rounded-xs border transition-all truncate text-center cursor-pointer ${
+                        isSelected
+                          ? "border-primary bg-primary/10 text-primary font-extrabold shadow-2xs"
+                          : "border-border bg-card text-muted-foreground hover:border-foreground/30"
+                      }`}
+                      title={p.description}
+                    >
+                      {p.name.split(" ")[0]}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

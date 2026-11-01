@@ -12,7 +12,12 @@ import {
   ChevronRight, 
   ArrowUpRight,
   ExternalLink,
-  MessageSquare
+  MessageSquare,
+  Wrench,
+  FileSpreadsheet,
+  Calculator,
+  Scale,
+  Sparkles
 } from "lucide-react";
 
 interface PageProps {
@@ -331,6 +336,72 @@ export default async function BlogPostPage({ params }: PageProps) {
                 </div>
               </div>
             )}
+
+            {/* Free GST Compliance Tools Sidebar Widget */}
+            <div className="border border-border/80 bg-card/40 rounded-xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center gap-1.5 border-b border-border/40 pb-2">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <h4 className="text-[10px] font-black uppercase tracking-wider text-foreground">
+                  Free GST Compliance Tools
+                </h4>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <Link
+                  href="/free-tools/offline-reconciliation"
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/70 text-foreground transition-colors group"
+                >
+                  <FileSpreadsheet className="h-4 w-4 text-primary shrink-0" />
+                  <div>
+                    <p className="font-semibold text-xs group-hover:text-primary">Offline 2B Matcher</p>
+                    <p className="text-[10px] text-muted-foreground">100% private in-browser</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/free-tools/itc-calculator"
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/70 text-foreground transition-colors group"
+                >
+                  <Calculator className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-xs group-hover:text-primary">ITC Mismatch Calc</p>
+                    <p className="text-[10px] text-muted-foreground">Rule 88D penalty diagnostic</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/gst-late-fee-calculator"
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/70 text-foreground transition-colors group"
+                >
+                  <Scale className="h-4 w-4 text-amber-500 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-xs group-hover:text-primary">Late Fee Calculator</p>
+                    <p className="text-[10px] text-muted-foreground">CGST/SGST & 18% interest</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/drc-01c-notice"
+                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/70 text-foreground transition-colors group"
+                >
+                  <Wrench className="h-4 w-4 text-purple-500 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-xs group-hover:text-primary">DRC-01C Reply Guide</p>
+                    <p className="text-[10px] text-muted-foreground">7-day statutory workflow</p>
+                  </div>
+                </Link>
+              </div>
+
+              <div className="pt-2 border-t border-border/40">
+                <Link
+                  href="/register"
+                  className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-xs"
+                >
+                  <span>Start 14-Day Free Trial</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
 
           </aside>
 

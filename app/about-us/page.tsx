@@ -137,9 +137,9 @@ export default function AboutUsPage() {
             </div>
 
             <div className="border border-border bg-card/30 rounded-xl p-5 shadow-xs">
-              <span className="text-2xl md:text-3xl font-black text-indigo-500 block">SOC-2</span>
+              <span className="text-2xl md:text-3xl font-black text-indigo-500 block">TLS 1.3</span>
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mt-1">Data Security</span>
-              <p className="text-[10px] text-muted-foreground mt-1 leading-normal">End-to-end encrypted tunnels for all API transactions.</p>
+              <p className="text-[10px] text-muted-foreground mt-1 leading-normal">AES-256 GCM encrypted tunnels for all API transactions.</p>
             </div>
           </div>
 

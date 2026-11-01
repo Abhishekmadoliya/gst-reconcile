@@ -77,8 +77,9 @@ export function daysBetweenInclusive(start: Date, end: Date): number {
 }
 
 export function isBlocked(dueDate: Date, filingDate: Date): boolean {
-  const delayMs = startOfDay(filingDate).getTime() - startOfDay(dueDate).getTime();
-  return delayMs > THREE_YEARS_IN_MS;
+  const cutoff = startOfDay(dueDate);
+  cutoff.setFullYear(cutoff.getFullYear() + 3);
+  return startOfDay(filingDate).getTime() > cutoff.getTime();
 }
 
 function clampNonNegative(n: number): number {

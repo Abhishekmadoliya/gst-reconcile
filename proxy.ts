@@ -17,7 +17,7 @@ function getJwtPayload(token: string) {
         .join("")
     );
     return JSON.parse(jsonPayload);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -35,79 +35,138 @@ export async function proxy(request: NextRequest) {
   
   // Define route classifications
   const isAuthRoute = path === "/login" || path === "/register";
-  // For this project phase, we classifications /dashboard, /reconcile, /gstins as protected
-  const isProtectedRoute = path.startsWith("/dashboard") || path.startsWith("/reconcile") || path.startsWith("/gstins");
+  const isOnboardingRoute = path === "/onboarding";
+  const isProtectedRoute = path.startsWith("/dashboard") || path.startsWith("/reconcile") || path.startsWith("/gstins") || isOnboardingRoute;
+  const hasSkippedOnboarding = request.cookies.get("skip_onboarding")?.value === "true";
 
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
+  const sessionToken = request.cookies.get("better-auth.session_token")?.value
+    || request.cookies.get("__Secure-better-auth.session_token")?.value;
 
   let isAuthed = false;
+  let userOnboardingCompleted: boolean | null = null;
   let newAccessToken: string | null = null;
   let newRefreshToken: string | null = null;
 
-  // 1. Validate Access Token
+  // 1. Validate JWT Access Token
   if (accessToken && !isTokenExpired(accessToken)) {
     isAuthed = true;
+    const payload = getJwtPayload(accessToken);
+    if (payload && typeof payload.onboardingCompleted === "boolean") {
+      userOnboardingCompleted = payload.onboardingCompleted;
+    }
   } 
-  // 2. Token Rotation: Access token missing/expired but refresh token is present
+  // 2. Validate Better Auth Session Token (Google OAuth / SSO session)
+  else if (sessionToken) {
+    try {
+      const allCookies = request.cookies.getAll();
+      const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join("; ");
+
+      const meResponse = await fetch(`${API_URL}/api/auth/me`, {
+        method: "GET",
+        headers: {
+          Cookie: cookieHeader,
+        },
+        cache: "no-store",
+      });
+
+      if (meResponse.ok) {
+        isAuthed = true;
+        const meData = await meResponse.json().catch(() => null);
+        if (meData?.data && typeof meData.data.onboardingCompleted === "boolean") {
+          userOnboardingCompleted = meData.data.onboardingCompleted;
+        }
+
+        // The backend /api/auth/me automatically issues accessToken and refreshToken cookies
+        // when authenticated via Better Auth session. Propagate them to the response.
+        const rawSetCookies = meResponse.headers.getSetCookie();
+        rawSetCookies.forEach((cookieStr) => {
+          const parts = cookieStr.split(";")[0].split("=");
+          const name = parts[0].trim();
+          const value = parts[1].trim();
+          if (name === "accessToken") newAccessToken = value;
+          if (name === "refreshToken") newRefreshToken = value;
+        });
+
+        if (newAccessToken && userOnboardingCompleted === null) {
+          const payload = getJwtPayload(newAccessToken);
+          if (payload && typeof payload.onboardingCompleted === "boolean") {
+            userOnboardingCompleted = payload.onboardingCompleted;
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Better Auth session verification failed in proxy:", err);
+    }
+  }
+  // 3. Token Rotation: Access token missing/expired but refresh token is present
   else if (refreshToken) {
     try {
       const refreshResponse = await fetch(`${API_URL}/api/auth/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Forward the refresh cookie to backend
-          Cookie: `refreshToken=${refreshToken}`
+          Cookie: `refreshToken=${refreshToken}`,
         },
-        body: JSON.stringify({ refreshToken })
+        body: JSON.stringify({ refreshToken }),
       });
 
       if (refreshResponse.ok) {
-        // Parse custom set-cookie headers from Express backend
         const rawSetCookies = refreshResponse.headers.getSetCookie();
-        
         rawSetCookies.forEach((cookieStr) => {
-          // Parse cookie attributes
           const parts = cookieStr.split(";")[0].split("=");
           const name = parts[0].trim();
           const value = parts[1].trim();
-          
           if (name === "accessToken") newAccessToken = value;
           if (name === "refreshToken") newRefreshToken = value;
         });
 
         if (newAccessToken) {
           isAuthed = true;
+          const payload = getJwtPayload(newAccessToken);
+          if (payload && typeof payload.onboardingCompleted === "boolean") {
+            userOnboardingCompleted = payload.onboardingCompleted;
+          }
         }
       }
     } catch (err) {
-      console.error("Token rotation failed in middleware:", err);
+      console.error("Token rotation failed in proxy:", err);
     }
   }
 
-  // 3. Handle Route Guards & Redirects
+  // 4. Handle Route Guards & Redirects
   let response = NextResponse.next();
 
   if (isProtectedRoute && !isAuthed) {
-    // Redirect unauthenticated requests attempting to access dashboard
+    // Redirect unauthenticated requests attempting to access protected routes
     response = NextResponse.redirect(new URL("/login", request.url));
   } else if (isAuthRoute && isAuthed) {
     // Redirect authenticated users trying to visit login/register
-    response = NextResponse.redirect(new URL("/", request.url));
+    if (userOnboardingCompleted === false && !hasSkippedOnboarding) {
+      response = NextResponse.redirect(new URL("/onboarding", request.url));
+    } else {
+      response = NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  } else if (
+    isAuthed && 
+    userOnboardingCompleted === false && 
+    !hasSkippedOnboarding && 
+    !isOnboardingRoute && 
+    (path.startsWith("/dashboard") || path.startsWith("/reconcile"))
+  ) {
+    // Redirect newly registered / first-time login users directly to onboarding
+    response = NextResponse.redirect(new URL("/onboarding", request.url));
   }
 
-  // 4. Inject Updated Cookies to Response & Request (To prevent SSR token mismatch)
+  // 5. Inject Updated Cookies to Response
   if (newAccessToken) {
-    // Write updated tokens to Next.js middleware response cookies
     response.cookies.set("accessToken", newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 15 * 60 // 15 mins
+      maxAge: 15 * 60, // 15 mins
     });
-    
-    // Set cookie on request headers so Server Components in this render cycle immediately receive them
-    request.cookies.set("accessToken", newAccessToken);
   }
 
   if (newRefreshToken) {
@@ -115,14 +174,12 @@ export async function proxy(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 // 7 days
+      maxAge: 7 * 24 * 60 * 60, // 7 days
     });
-    
-    request.cookies.set("refreshToken", newRefreshToken);
   }
 
-  // If credentials are completely invalid, clear cookies on response to ensure state syncs
-  if (!isAuthed && (accessToken || refreshToken)) {
+  // If credentials are completely invalid, clear cookies on response to ensure clean state
+  if (!isAuthed && !sessionToken && (accessToken || refreshToken)) {
     response.cookies.delete("accessToken");
     response.cookies.delete("refreshToken");
   }
@@ -130,17 +187,8 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-// Next.js matcher configuration: Intercept pages, API routes, but exclude static assets
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (Next.js internal API routes, not backend routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - next.svg, vercel.svg (svgs)
-     */
     "/((?!api|_next/static|_next/image|favicon.ico|next.svg|vercel.svg).*)",
   ],
 };

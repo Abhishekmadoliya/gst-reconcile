@@ -173,6 +173,38 @@ export default function OfflineReconciliationPage() {
                 Excel sheets or print the mismatch sheets directly to PDF for client reviews.
               </p>
 
+              {/* Related Tools & Statutory Guides */}
+              <div className="mt-8 pt-6 border-t border-border/80 not-prose">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
+                  Related Compliance Tools &amp; Statutory Guides
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Link
+                    href="/drc-01c-notice"
+                    className="p-4 rounded-xl border border-border bg-card/60 hover:border-primary/40 hover:bg-muted/40 transition-all group"
+                  >
+                    <p className="text-xs font-bold text-foreground group-hover:text-primary">DRC-01C Notice Guide &rarr;</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">Rule 88D 7-day reply procedure &amp; DRC-03</p>
+                  </Link>
+
+                  <Link
+                    href="/free-tools/itc-calculator"
+                    className="p-4 rounded-xl border border-border bg-card/60 hover:border-primary/40 hover:bg-muted/40 transition-all group"
+                  >
+                    <p className="text-xs font-bold text-foreground group-hover:text-primary">ITC Interest Calculator &rarr;</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">Section 50(3) 18% p.a. exposure matrix</p>
+                  </Link>
+
+                  <Link
+                    href="/pricing"
+                    className="p-4 rounded-xl border border-border bg-card/60 hover:border-primary/40 hover:bg-muted/40 transition-all group"
+                  >
+                    <p className="text-xs font-bold text-foreground group-hover:text-primary">Automated GSP Cloud &rarr;</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">14-day free trial on Practitioner tier</p>
+                  </Link>
+                </div>
+              </div>
+
             </div>
 
             {/* Structured Data (Schema.org JSON-LD) */}

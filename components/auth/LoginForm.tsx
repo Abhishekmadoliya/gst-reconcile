@@ -6,6 +6,7 @@ import { API_URL } from "@/lib/config";
 import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -64,9 +65,19 @@ export default function LoginForm() {
     }
   };
 
-  const handleGoogleSSO = () => {
-    setSsoInfo("Google Workspace SSO integration is currently disabled in Sandbox. Please use email credentials.");
+  const handleGoogleSSO = async () => {
+    setIsLoading(true);
     setError(null);
+    setSsoInfo(null);
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/dashboard`,
+      });
+    } catch (err: any) {
+      setError(err?.message || "Failed to initialize Google SSO. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (

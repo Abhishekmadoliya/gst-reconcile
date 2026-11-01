@@ -189,13 +189,29 @@ export default function RiskCalculator() {
                 </div>
               </div>
 
-              {/* Bottom Notice explanation */}
-              <div className="text-[9px] text-muted-foreground leading-relaxed mt-4 pt-3 border-t border-border">
-                * GST Portal triggers automated Form <strong>DRC-01C</strong> warnings when GSTR-3B ITC claims exceed GSTR-2B values by <strong>&gt;10% or ₹1,00,000</strong>. Reconciling prevents interest penalties entirely.
+              {/* Bottom Notice explanation & Contextual Internal Links */}
+              <div className="text-[10px] text-muted-foreground leading-relaxed mt-4 pt-3 border-t border-border">
+                * GST Portal triggers automated Form <strong>DRC-01C</strong> intimations under Rule 88D when GSTR-3B ITC claims exceed GSTR-2B by <strong>&gt;10% and ₹1,00,000</strong>.
               </div>
 
             </div>
 
+          </div>
+
+          {/* Contextual Legal Guides Footer */}
+          <div className="bg-muted/40 px-6 py-3 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+            <span className="text-muted-foreground font-medium">Related Statutory Compliance Guides:</span>
+            <div className="flex flex-wrap items-center gap-4">
+              <a href="/drc-01c-notice" className="font-semibold text-primary hover:underline">
+                DRC-01C 7-Day Reply Guide &rarr;
+              </a>
+              <a href="/gst-late-fee-calculator" className="font-semibold text-primary hover:underline">
+                Late Fee Calculator &rarr;
+              </a>
+              <a href="/free-tools/offline-reconciliation" className="font-semibold text-primary hover:underline">
+                Test Free Offline &rarr;
+              </a>
+            </div>
           </div>
         </div>
 

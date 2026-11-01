@@ -33,7 +33,7 @@ interface ReconcileDetailsViewerProps {
 
 interface ReconResultRow {
   id: string;
-  category: "MATCHED" | "AMOUNT_MISMATCH" | "IN_BOOKS_NOT_2B" | "IN_2B_NOT_BOOKS" | "POSSIBLE_MATCH";
+  category: "MATCHED" | "AMOUNT_MISMATCH" | "HEAD_MISMATCH" | "IN_BOOKS_NOT_2B" | "IN_2B_NOT_BOOKS" | "POSSIBLE_MATCH";
   supplierGstin: string;
   supplierName: string;
   invoiceNo: string;
@@ -41,6 +41,8 @@ interface ReconResultRow {
   gstr2b: { igst: number; cgst: number; sgst: number; total: number } | null;
   diff: { igst: number; cgst: number; sgst: number; total: number } | null;
   matchConfidence: number | null;
+  itcAvailability?: string;
+  notes?: string;
 }
 
 export default function ReconcileDetailsViewer({ jobId, setActiveTab }: ReconcileDetailsViewerProps) {
@@ -141,7 +143,19 @@ export default function ReconcileDetailsViewer({ jobId, setActiveTab }: Reconcil
           Invoice No <ArrowUpDown className="h-3 w-3" />
         </button>
       ),
-      cell: (info) => <span className="font-mono font-bold text-[11px]">{info.getValue()}</span>,
+      cell: (info) => {
+        const notes = info.row.original.notes;
+        return (
+          <div className="flex flex-col">
+            <span className="font-mono font-bold text-[11px]">{info.getValue()}</span>
+            {notes && (
+              <span className="text-[8px] text-indigo-400 truncate max-w-[150px]" title={notes}>
+                {notes}
+              </span>
+            )}
+          </div>
+        );
+      },
     }),
     columnHelper.accessor("purchaseRegister", {
       header: () => <span className="font-extrabold text-right block uppercase text-[8px] tracking-widest text-muted-foreground">Ledger Books</span>,
@@ -205,17 +219,26 @@ export default function ReconcileDetailsViewer({ jobId, setActiveTab }: Reconcil
       header: "Status",
       cell: (info) => {
         const cat = info.getValue();
-        const config = {
+        const config: Record<string, string> = {
           MATCHED: "bg-compliance-success-bg text-compliance-success border-compliance-success/20",
+          HEAD_MISMATCH: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
           AMOUNT_MISMATCH: "bg-compliance-warn-bg text-compliance-warn border-compliance-warn/20",
           IN_BOOKS_NOT_2B: "bg-compliance-alert-bg text-compliance-alert border-compliance-alert/20",
           IN_2B_NOT_BOOKS: "bg-compliance-info-bg text-compliance-info border-compliance-info/20",
           POSSIBLE_MATCH: "bg-amber-50 text-amber-800 border-amber-100",
         };
+        const row = info.row.original;
         return (
-          <span className={`inline-flex px-1.5 py-0.2 rounded-sm text-[8px] font-bold uppercase border ${config[cat] || "bg-muted text-muted-foreground"}`}>
-            {cat.replace(/_/g, " ")}
-          </span>
+          <div className="flex flex-col gap-0.5 items-start">
+            <span className={`inline-flex px-1.5 py-0.5 rounded-sm text-[8px] font-bold uppercase border ${config[cat] || "bg-muted text-muted-foreground"}`}>
+              {cat === "HEAD_MISMATCH" ? "Head Mismatch" : cat.replace(/_/g, " ")}
+            </span>
+            {row.itcAvailability === "N" && (
+              <span className="inline-flex px-1 py-0.2 rounded text-[7px] font-bold uppercase bg-rose-500/15 text-rose-500 border border-rose-500/20" title="Section 17(5) Blocked Credit">
+                Blocked Sec 17(5)
+              </span>
+            )}
+          </div>
         );
       },
     }),
@@ -231,6 +254,8 @@ export default function ReconcileDetailsViewer({ jobId, setActiveTab }: Reconcil
     switch (category) {
       case "MATCHED":
         return "border-l-2 border-l-success bg-compliance-success-bg/10 hover:bg-compliance-success-bg/20";
+      case "HEAD_MISMATCH":
+        return "border-l-2 border-l-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/15";
       case "AMOUNT_MISMATCH":
         return "border-l-2 border-l-warn bg-compliance-warn-bg/10 hover:bg-compliance-warn-bg/20";
       case "IN_BOOKS_NOT_2B":
@@ -247,6 +272,7 @@ export default function ReconcileDetailsViewer({ jobId, setActiveTab }: Reconcil
   const categories = [
     { value: "", label: "All" },
     { value: "MATCHED", label: "Matched" },
+    { value: "HEAD_MISMATCH", label: "Head Mismatch" },
     { value: "AMOUNT_MISMATCH", label: "Diffs" },
     { value: "IN_BOOKS_NOT_2B", label: "Books Only" },
     { value: "IN_2B_NOT_BOOKS", label: "2B Only" },

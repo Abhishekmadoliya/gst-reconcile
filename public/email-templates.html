@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TaxSolver Email Templates Preview Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; }
+    header { background: #1e293b; padding: 16px 24px; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; }
+    .title { font-size: 16px; font-weight: 700; color: #ffffff; }
+    .tabs { display: flex; gap: 8px; }
+    .tab { background: #334155; color: #cbd5e1; border: 1px solid #475569; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .tab.active { background: #3b82f6; color: #ffffff; border-color: #3b82f6; }
+    .tab:hover { background: #475569; color: #ffffff; }
+    .preview-frame { width: 100%; height: calc(100vh - 70px); border: none; background: #f1f5f9; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">TaxSolver &bull; Email Template Showcase (Light Slate Blue Theme)</div>
+    <div class="tabs">
+      <a class="tab active" href="email-preview-vendor-notice.html" target="viewer">1. Vendor Notice (ITC Blockage)</a>
+      <a class="tab" href="email-preview-user-event.html" target="viewer">2. User Event (Notice Dispatched)</a>
+      <a class="tab" href="email-preview-recon-complete.html" target="viewer">3. User Event (Recon Complete)</a>
+    </div>
+  </header>
+  <iframe name="viewer" class="preview-frame" src="email-preview-vendor-notice.html"></iframe>
+</body>
+</html>

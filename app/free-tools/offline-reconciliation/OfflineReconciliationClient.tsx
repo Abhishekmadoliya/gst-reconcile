@@ -6,6 +6,7 @@ import { API_URL } from "@/lib/config";
 import { formatINR } from "@/lib/utils";
 import { db } from "@/lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
+import { ERP_PRESETS, getErpPresetById } from "@/lib/erp-presets";
 import {
   Upload,
   FileSpreadsheet,
@@ -42,7 +43,7 @@ interface TaxBreakdown {
 }
 
 interface ReconResultRow {
-  category: "MATCHED" | "AMOUNT_MISMATCH" | "IN_BOOKS_NOT_2B" | "IN_2B_NOT_BOOKS" | "POSSIBLE_MATCH";
+  category: "MATCHED" | "AMOUNT_MISMATCH" | "HEAD_MISMATCH" | "IN_BOOKS_NOT_2B" | "IN_2B_NOT_BOOKS" | "POSSIBLE_MATCH";
   supplierGstin: string;
   supplierName: string;
   invoiceNo: string;
@@ -51,15 +52,20 @@ interface ReconResultRow {
   gstr2b: TaxBreakdown | null;
   diff: TaxBreakdown | null;
   matchConfidence: number | null;
+  itcAvailability?: string;
+  notes?: string;
 }
 
 interface ReconciliationSummary {
   matchedCount: number;
   amountMismatchCount: number;
+  headMismatchCount?: number;
   inBooksNot2bCount: number;
   in2bNotBooksCount: number;
   possibleMatchCount: number;
+  ineligibleItcCount?: number;
   itcMatched: number;
+  itcIneligible?: number;
   itcAtRisk: number;
   itcUnclaimed: number;
 }
@@ -130,6 +136,7 @@ export default function OfflineReconciliationClient() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Template Mismatch Error State
+  const [selectedErpPreset, setSelectedErpPreset] = useState<string>("auto");
   const [showMappingModal, setShowMappingModal] = useState(false);
     const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
     const [userColumnSearch, setUserColumnSearch] = useState("");
@@ -329,7 +336,12 @@ export default function OfflineReconciliationClient() {
 
   // Filter and Search logic
   const filteredResults = (reconData?.results || []).filter((row) => {
-    const matchesCategory = filterCategory === "" || row.category === filterCategory;
+    let matchesCategory = true;
+    if (filterCategory === "INELIGIBLE") {
+      matchesCategory = row.itcAvailability === "N";
+    } else if (filterCategory !== "") {
+      matchesCategory = row.category === filterCategory;
+    }
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
       row.supplierName.toLowerCase().includes(searchLower) ||
@@ -362,6 +374,7 @@ export default function OfflineReconciliationClient() {
   // Category badges configuration
   const CATEGORY_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
     MATCHED: { label: "Matched", color: "text-emerald-500 border-emerald-500/20", bg: "bg-emerald-500/10" },
+    HEAD_MISMATCH: { label: "Tax Head Mismatch", color: "text-indigo-500 border-indigo-500/20", bg: "bg-indigo-500/10" },
     AMOUNT_MISMATCH: { label: "Amount Mismatch", color: "text-amber-500 border-amber-500/20", bg: "bg-amber-500/10" },
     IN_BOOKS_NOT_2B: { label: "Missing in 2B", color: "text-rose-500 border-rose-500/20", bg: "bg-rose-500/10" },
     IN_2B_NOT_BOOKS: { label: "Unclaimed (2B)", color: "text-blue-500 border-blue-500/20", bg: "bg-blue-500/10" },
@@ -551,6 +564,51 @@ export default function OfflineReconciliationClient() {
                     </div>
                 )}
 
+                {/* ERP Preset Selector Pills */}
+                <div className="mb-6 p-4 bg-muted/20 border border-border rounded-xl text-left">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                        <Sliders className="h-3.5 w-3.5 text-primary" /> Select Accounting / ERP System
+                      </label>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        Choose your software format for instant 1-click header normalization, or use Auto-Detect.
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground bg-background px-2 py-1 rounded-sm border border-border self-start sm:self-auto">
+                      Format: {getErpPresetById(selectedErpPreset).exportFormat}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                    {ERP_PRESETS.map((preset) => {
+                      const isSelected = selectedErpPreset === preset.id;
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedErpPreset(preset.id);
+                            if (preset.id !== "auto") {
+                              setColumnMapping({ ...preset.mappings });
+                            } else {
+                              setColumnMapping({});
+                            }
+                          }}
+                          className={`px-3 py-2 text-center rounded-lg border text-xs font-bold transition-all cursor-pointer truncate ${
+                            isSelected
+                              ? "border-primary bg-primary/10 text-primary shadow-xs"
+                              : "border-border bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                          }`}
+                          title={preset.description}
+                        >
+                          {preset.name.split(" ")[0]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-6 mb-8">
 
                   {/* 1. Purchase Register File Upload */}
@@ -710,6 +768,21 @@ export default function OfflineReconciliationClient() {
                 </div>
               </div>
 
+              {/* Ineligible ITC Warning Banner (Section 17(5) Blocked Credit) */}
+              {(reconData.summary.ineligibleItcCount || 0) > 0 && (
+                <div className="mb-6 p-4 border border-rose-500/30 bg-rose-500/10 rounded-xl flex items-start gap-3 print:hidden">
+                  <AlertCircle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" />
+                  <div className="text-left">
+                    <h4 className="text-sm font-bold text-rose-500">Ineligible ITC Alert — Section 17(5) Blocked Credit</h4>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <strong className="text-foreground">{reconData.summary.ineligibleItcCount} invoice(s)</strong> totaling{" "}
+                      <strong className="text-rose-500">₹{formatINR(reconData.summary.itcIneligible || 0)}</strong> are marked as Ineligible in GSTR-2B.
+                      These must be reported as ineligible in Table 4(B) of GSTR-3B and should not be claimed as credit.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Warnings Alert Banner (Hidden during Print) */}
               {(reconData.warnings.purchaseRegister.length > 0 || reconData.warnings.gstr2b.length > 0) && (
                 <div className="mb-6 p-4 border border-amber-500/20 bg-amber-500/10 rounded-xl flex items-start gap-3 print:hidden">
@@ -810,6 +883,32 @@ export default function OfflineReconciliationClient() {
                   Matched ({reconData.summary.matchedCount})
                 </button>
 
+                {/* Tax Head / POS Mismatch */}
+                {(reconData.summary.headMismatchCount || 0) > 0 && (
+                  <button
+                    onClick={() => { setFilterCategory("HEAD_MISMATCH"); setCurrentPage(1); }}
+                    className={`px-4 py-3 rounded-lg border text-xs font-semibold text-center transition-all cursor-pointer ${filterCategory === "HEAD_MISMATCH"
+                      ? "border-indigo-500 bg-indigo-500/10 text-indigo-500"
+                      : "border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground"
+                      }`}
+                  >
+                    Head Mismatch ({reconData.summary.headMismatchCount})
+                  </button>
+                )}
+
+                {/* Ineligible ITC */}
+                {(reconData.summary.ineligibleItcCount || 0) > 0 && (
+                  <button
+                    onClick={() => { setFilterCategory("INELIGIBLE"); setCurrentPage(1); }}
+                    className={`px-4 py-3 rounded-lg border text-xs font-semibold text-center transition-all cursor-pointer ${filterCategory === "INELIGIBLE"
+                      ? "border-rose-500 bg-rose-500/10 text-rose-500"
+                      : "border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground"
+                      }`}
+                  >
+                    Blocked Sec 17(5) ({reconData.summary.ineligibleItcCount})
+                  </button>
+                )}
+
                 {/* Amount Mismatch */}
                 <button
                   onClick={() => { setFilterCategory("AMOUNT_MISMATCH"); setCurrentPage(1); }}
@@ -885,9 +984,16 @@ export default function OfflineReconciliationClient() {
 
                               {/* Category Badge */}
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-bold ${cat.color} ${cat.bg}`}>
-                                  {cat.label}
-                                </span>
+                                <div className="flex flex-col gap-1 items-start">
+                                  <span className={`inline-flex px-2 py-0.5 rounded-full border text-[10px] font-bold ${cat.color} ${cat.bg}`}>
+                                    {cat.label}
+                                  </span>
+                                  {row.itcAvailability === "N" && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/15 text-rose-500 border border-rose-500/20" title="Ineligible ITC under Section 17(5)">
+                                      Blocked Sec 17(5)
+                                    </span>
+                                  )}
+                                </div>
                               </td>
 
                               {/* Supplier Details */}
@@ -899,9 +1005,14 @@ export default function OfflineReconciliationClient() {
                               </td>
 
                               {/* Invoice Details */}
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-6 py-4">
                                 <div className="font-semibold">{row.invoiceNo}</div>
                                 <div className="text-[10px] text-muted-foreground mt-0.5">{row.invoiceDate}</div>
+                                {row.notes && (
+                                  <div className="text-[10px] text-indigo-400 mt-1 max-w-xs truncate" title={row.notes}>
+                                    {row.notes}
+                                  </div>
+                                )}
                               </td>
 
                               {/* Books total */}
@@ -1089,7 +1200,7 @@ export default function OfflineReconciliationClient() {
                 </div>
 
                 {/* Invoice Info */}
-                <div className="grid grid-cols-2 gap-4 p-3 bg-muted/30 border border-border rounded-lg mb-6 text-xs">
+                <div className="grid grid-cols-3 gap-3 p-3 bg-muted/30 border border-border rounded-lg mb-6 text-xs">
                   <div className="text-left">
                     <span className="text-[10px] text-muted-foreground block mb-0.5">Invoice Number</span>
                     <span className="font-bold">{selectedRow.invoiceNo}</span>
@@ -1098,7 +1209,18 @@ export default function OfflineReconciliationClient() {
                     <span className="text-[10px] text-muted-foreground block mb-0.5">Invoice Date</span>
                     <span className="font-bold">{selectedRow.invoiceDate || "N/A"}</span>
                   </div>
+                  <div className="text-left">
+                    <span className="text-[10px] text-muted-foreground block mb-0.5">ITC Status</span>
+                    <span className={`font-bold ${selectedRow.itcAvailability === 'N' ? 'text-rose-500' : 'text-emerald-500'}`}>
+                      {selectedRow.itcAvailability === 'N' ? 'Blocked Sec 17(5)' : 'Eligible'}
+                    </span>
+                  </div>
                 </div>
+                {selectedRow.notes && (
+                  <div className="mb-4 p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-left text-xs text-indigo-400">
+                    <strong>Audit Note:</strong> {selectedRow.notes}
+                  </div>
+                )}
 
                 {/* Comparison Grid */}
                 <div className="space-y-4 mb-6">

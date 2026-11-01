@@ -30,7 +30,8 @@ import {
   FileText,
   CreditCard,
   Settings,
-  ChevronsUpDown
+  ChevronsUpDown,
+  Clock,
 } from "lucide-react";
 
 interface Gstin {
@@ -80,6 +81,37 @@ export default function DashboardLayout({
   });
 
   const gstins: Gstin[] = gstinsRes?.data || [];
+
+  // 1b. Fetch Firm Profile for Trial / Subscription status
+  const { data: firmRes } = useQuery<{
+    success: boolean;
+    data: {
+      id: string;
+      name: string;
+      plan: string;
+      billingStatus: string;
+      subscriptionExpiresAt?: string | null;
+      createdAt?: string | null;
+    };
+  }>({
+    queryKey: ["settings", "firm"],
+    queryFn: async () => {
+      const res = await api.get(`${API_URL}/api/settings/firm`);
+      return res.data;
+    },
+  });
+
+  const firm = firmRes?.data;
+  const isTrial = firm?.billingStatus === "trialing";
+  const trialExpiryTime = firm?.subscriptionExpiresAt
+    ? new Date(firm.subscriptionExpiresAt).getTime()
+    : firm?.createdAt
+    ? new Date(firm.createdAt).getTime() + 14 * 86400000
+    : Date.now() + 14 * 86400000;
+  const trialDaysRemaining = Math.max(
+    0,
+    Math.ceil((trialExpiryTime - Date.now()) / (1000 * 60 * 60 * 24))
+  );
 
   // Automatically select the first GSTIN when loaded if none is selected
   useEffect(() => {
@@ -256,14 +288,13 @@ export default function DashboardLayout({
     { path: "/dashboard/gstr3b", label: "GSTR-3B", icon: FileText },
     { path: "/dashboard/billing", label: "Billing", icon: CreditCard },
     { path: "/dashboard/settings", label: "Settings", icon: Settings },
-    { path: "/dashboard/start-reconciliation", label: "Recon", icon: Settings }
   ];
 
   return (
-    <div className="flex flex-col bg-background min-h-screen text-foreground transition-colors duration-200">
+    <div className="flex flex-col bg-background h-screen max-h-screen overflow-hidden text-foreground transition-colors duration-200">
 
       {/* GLOBAL TOP HEADER */}
-      <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 sticky top-0 z-30 shrink-0 select-none">
+      <header className="h-14 border-b border-border bg-card flex items-center justify-between px-6 shrink-0 select-none z-30">
         {/* Brand Logo */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 font-mono font-semibold tracking-tight text-md text-foreground hover:opacity-95 transition-opacity">
@@ -317,14 +348,22 @@ export default function DashboardLayout({
             </div>
           )}
 
-          {/* Global GSP status indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 border border-border bg-muted/40 rounded-lg text-[9px] uppercase tracking-wider text-foreground/80 font-bold">
-            <span className="relative flex h-1.5 w-1.5 shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-            </span>
-            <span>GSP: Sandbox.co.in</span>
-          </div>
+          {/* Trial / Subscription Status Pill */}
+          {isTrial ? (
+            <Link
+              href="/dashboard/billing"
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-lg text-[9px] uppercase tracking-wider font-bold hover:bg-amber-500/20 transition-colors"
+              title="You are on a 14-day complimentary evaluation trial"
+            >
+              <Clock className="h-3 w-3 text-amber-500" />
+              <span>Trial: {trialDaysRemaining}d remaining &bull; Upgrade</span>
+            </Link>
+          ) : firm ? (
+            <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg text-[9px] uppercase tracking-wider font-bold">
+              <ShieldCheck className="h-3 w-3 text-emerald-500" />
+              <span>{firm.plan.toUpperCase()}</span>
+            </div>
+          ) : null}
 
           <ThemeToggle />
 
@@ -338,13 +377,13 @@ export default function DashboardLayout({
       </header>
 
       {/* SUB-HEADER / WORKSPACE GRID */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex min-h-0 overflow-hidden">
 
-        {/* LEFT SIDEBAR */}
-        <aside className="w-64 bg-card border-r border-border flex flex-col h-[calc(100vh-3.5rem)] sticky  shrink-0 select-none text-left">
+        {/* LEFT SIDEBAR (Fixed in place, never scrolls with page) */}
+        <aside className="w-64 bg-card border-r border-border flex flex-col h-full shrink-0 select-none text-left">
 
           {/* Client Switcher */}
-          <div className="relative px-4 py-3 border-b border-border">
+          <div className="relative px-4 py-3 border-b border-border shrink-0">
             <label className="text-[9px] font-extrabold uppercase tracking-widest text-muted-foreground block mb-1">
               Active Client
             </label>
@@ -466,7 +505,7 @@ export default function DashboardLayout({
           </div>
 
           {/* Navigation links */}
-          <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+          <nav className="flex-1 min-h-0 px-4 py-4 space-y-1.5 overflow-y-auto">
             {navItems.map((tab) => {
               const isActive = pathname === tab.path;
               const Icon = tab.icon;
@@ -502,7 +541,7 @@ export default function DashboardLayout({
 
           {/* Active Client GSP warning card if offline */}
           {activeClient && activeClient.status === "connected" && (
-            <div className="mx-4 mb-4 p-3 bg-success-bg/10 border border-success/20 rounded-lg">
+            <div className="mx-4 mb-4 p-3 bg-success-bg/10 border border-success/20 rounded-lg shrink-0">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-success" />
                 <span className="text-[10px] font-bold text-success uppercase tracking-wider">
@@ -516,7 +555,7 @@ export default function DashboardLayout({
           )}
 
           {activeClient && activeClient.status !== "connected" && (
-            <div className="mx-4 mb-4 p-3 bg-warn-bg/10 border border-warn/25 rounded-lg">
+            <div className="mx-4 mb-4 p-3 bg-warn-bg/10 border border-warn/25 rounded-lg shrink-0">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-warn" />
                 <span className="text-[10px] font-bold text-warn uppercase tracking-wider">
@@ -537,7 +576,7 @@ export default function DashboardLayout({
           )}
 
           {!activeClient && (
-            <div className="mx-4 mb-4 p-3 bg-muted border border-border rounded-lg text-center">
+            <div className="mx-4 mb-4 p-3 bg-muted border border-border rounded-lg text-center shrink-0">
               <p className="text-[10px] text-muted-foreground leading-normal">
                 No client active. Select a client to begin audit.
               </p>
@@ -545,15 +584,29 @@ export default function DashboardLayout({
           )}
 
           {/* Sidebar Footer with profile info and logout */}
-          <div className="p-4 border-t border-border bg-muted/20 flex flex-col gap-2 mt-auto">
+          <div className="p-4 border-t border-border bg-muted/20 flex flex-col gap-2 mt-auto shrink-0">
             <div className="flex items-center justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-bold text-foreground truncate leading-none">
                   {user?.name || "CA Officer"}
                 </p>
                 <p className="text-[9px] text-muted-foreground truncate leading-none mt-1.5">
-                  {user?.firmName || "CA Firm"}
+                  {firm?.name || user?.firmName || "CA Firm"}
                 </p>
+                {isTrial ? (
+                  <Link
+                    href="/dashboard/billing"
+                    className="inline-flex items-center gap-1 mt-2 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25 hover:bg-amber-500/20 transition-colors"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    Trial ({trialDaysRemaining}d) &bull; Activate
+                  </Link>
+                ) : firm ? (
+                  <span className="inline-flex items-center gap-1 mt-2 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    <ShieldCheck className="h-2.5 w-2.5" />
+                    {firm.plan.toUpperCase()} ACTIVE
+                  </span>
+                ) : null}
               </div>
               <button
                 onClick={logout}
@@ -566,8 +619,8 @@ export default function DashboardLayout({
           </div>
         </aside>
 
-        {/* MAIN WORKSPACE CANVAS */}
-        <main className="flex-1 overflow-y-auto bg-background transition-colors duration-200">
+        {/* MAIN WORKSPACE CANVAS (Only this container scrolls) */}
+        <main className="flex-1 min-h-0 overflow-y-auto bg-background transition-colors duration-200">
           <div className="max-w-7xl mx-auto px-6 py-6 w-full">
             {children}
           </div>

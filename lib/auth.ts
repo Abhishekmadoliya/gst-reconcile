@@ -6,23 +6,26 @@ export async function getServerUser(): Promise<UserProfile | null> {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
+    const sessionToken = cookieStore.get("better-auth.session_token")?.value;
 
-    if (!accessToken) {
+    if (!accessToken && !sessionToken) {
       return null;
     }
+
+    const allCookies = cookieStore.getAll();
+    const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join("; ");
 
     let response = await fetch(`${API_URL}/api/auth/me`, {
       method: "GET",
       headers: {
-        Cookie: `accessToken=${accessToken}`,
+        Cookie: cookieHeader,
       },
       cache: "no-store",
     });
 
-    if (response.status === 401) {
+    if (response.status === 401 && !sessionToken) {
       const refreshToken = cookieStore.get("refreshToken")?.value;
       if (refreshToken) {
-        // Try to refresh the token via backend
         const refreshResponse = await fetch(`${API_URL}/api/auth/refresh`, {
           method: "POST",
           headers: {
@@ -34,7 +37,6 @@ export async function getServerUser(): Promise<UserProfile | null> {
         });
 
         if (refreshResponse.ok) {
-          // Extract the new accessToken from Set-Cookie header if possible, or response body
           const setCookie = refreshResponse.headers.get("set-cookie");
           let newAccessToken = null;
           
@@ -46,11 +48,10 @@ export async function getServerUser(): Promise<UserProfile | null> {
           }
 
           if (newAccessToken) {
-            // Retry /auth/me with the new access token
             response = await fetch(`${API_URL}/api/auth/me`, {
               method: "GET",
               headers: {
-                Cookie: `accessToken=${newAccessToken}`,
+                Cookie: `accessToken=${newAccessToken}; ${cookieHeader}`,
               },
               cache: "no-store",
             });

@@ -5,9 +5,11 @@ export const dynamic = "force-static";
 export async function GET() {
   const staticPages = [
     { path: "", changefreq: "daily", priority: "1.0" },
+    { path: "pricing", changefreq: "weekly", priority: "0.95" },
     { path: "gst-reconciliation-software", changefreq: "weekly", priority: "0.9" },
     { path: "gstr-2b-reconciliation", changefreq: "weekly", priority: "0.8" },
     { path: "drc-01c-notice", changefreq: "weekly", priority: "0.8" },
+    { path: "invoice-generator", changefreq: "weekly", priority: "0.85" },
     { path: "free-tools/itc-calculator", changefreq: "weekly", priority: "0.8" },
     { path: "free-tools/offline-reconciliation", changefreq: "weekly", priority: "0.9" },
     { path: "gst-due-date-calender", changefreq: "weekly", priority: "0.7" },
@@ -17,10 +19,13 @@ export async function GET() {
     { path: "compare/expressgst-vs-taxsolver", changefreq: "weekly", priority: "0.8" },
     { path: "compare/ledgers-vs-taxsolver", changefreq: "weekly", priority: "0.8" },
     { path: "reports/gst-reconciliation-benchmark-2026", changefreq: "monthly", priority: "0.8" },
+    { path: "blog", changefreq: "daily", priority: "0.8" },
+    { path: "about-us", changefreq: "monthly", priority: "0.6" },
+    { path: "contact-us", changefreq: "monthly", priority: "0.6" },
+    { path: "privacy-policy", changefreq: "monthly", priority: "0.5" },
+    { path: "terms-of-service", changefreq: "monthly", priority: "0.5" },
     { path: "login", changefreq: "monthly", priority: "0.5" },
     { path: "register", changefreq: "monthly", priority: "0.5" },
-    { path: "contact-us", changefreq: "monthly", priority: "0.6" },
-    { path: "about-us", changefreq: "monthly", priority: "0.6" },
   ];
 
   const today = new Date().toISOString().split("T")[0];

@@ -98,7 +98,7 @@ export default function ClearTaxComparePage() {
             ClearTax vs TaxSolver
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Looking for a modern, lightweight, and cost-effective ClearTax alternative? See why 250+ CA firms and tax professionals choose TaxSolver for automated GSTR-2B reconciliation.
+            Looking for a modern, lightweight, and cost-effective ClearTax alternative? See why Chartered Accountants and corporate tax teams choose TaxSolver for high-speed, automated GSTR-2B reconciliation without desktop locks or opaque pricing.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
             <Link

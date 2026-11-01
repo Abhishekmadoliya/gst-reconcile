@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { API_URL } from "@/lib/config";
@@ -10,7 +11,8 @@ import {
   BarChart3,
   FileDown,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2
 } from "lucide-react";
 import {
   PieChart,
@@ -28,6 +30,8 @@ import {
 
 export default function ReportsPage() {
   const { selectedGstinId } = useDashboardStore();
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportNotice, setExportNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const { data: itcSummaryRes, isLoading } = useQuery({
     queryKey: ["analytics", "itc-summary"],
@@ -38,6 +42,64 @@ export default function ReportsPage() {
   });
 
   const itcSummary = itcSummaryRes?.data || [];
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      setExportNotice(null);
+
+      // 1. Fetch recent reconciliation history to find completed job to export
+      const historyRes = await api.get(`${API_URL}/api/reconcile/history`, {
+        params: {
+          page: 1,
+          limit: 10,
+          gstinId: selectedGstinId || undefined,
+        },
+      });
+
+      const jobs = historyRes.data?.data || [];
+      const completedJob = jobs.find((j: any) => j.status === "done") || jobs[0];
+
+      if (!completedJob) {
+        setExportNotice({
+          type: "error",
+          text: "No completed reconciliation job found to export. Run a reconciliation first.",
+        });
+        return;
+      }
+
+      // 2. Fetch the Excel report binary stream
+      const res = await api.get(`${API_URL}/api/reconcile/${completedJob.id}/export`, {
+        responseType: "blob",
+      });
+
+      // 3. Trigger file download in browser
+      const blob = new Blob([res.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `reconciliation-audit-${completedJob.period || "export"}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      setExportNotice({
+        type: "success",
+        text: `Exported reconciliation report for period ${completedJob.period}.`,
+      });
+    } catch (err: any) {
+      console.error("Export error:", err);
+      setExportNotice({
+        type: "error",
+        text: err?.response?.data?.error?.message || "Failed to export report. Please try again.",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const COLORS = ["#10b981", "#fbbf24", "#60a5fa", "#f87171"];
 
@@ -63,16 +125,50 @@ export default function ReportsPage() {
             <BarChart3 className="h-4.5 w-4.5 text-primary" /> Analytics & Reports Ledger
           </h2>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            Visualize compliance health metrics, ITC savings breakdowns, and generate monthly report PDFs.
+            Visualize compliance health metrics, ITC savings breakdowns, and generate monthly report audit spreadsheets.
           </p>
         </div>
         <button
-          onClick={() => alert("Report compiled. PDF download will begin shortly.")}
-          className="flex items-center gap-1.5 bg-primary hover:bg-primary/95 text-primary-foreground text-[10px] font-bold uppercase tracking-wider py-2 px-4 rounded-sm shadow cursor-pointer transition-colors"
+          onClick={handleExport}
+          disabled={isExporting}
+          className="flex items-center gap-1.5 bg-primary hover:bg-primary/95 text-primary-foreground text-[10px] font-bold uppercase tracking-wider py-2 px-4 rounded-sm shadow cursor-pointer transition-colors disabled:opacity-50"
         >
-          Export Report <FileDown className="h-4 w-4" />
+          {isExporting ? (
+            <>
+              Exporting... <Loader2 className="h-4 w-4 animate-spin" />
+            </>
+          ) : (
+            <>
+              Export Report <FileDown className="h-4 w-4" />
+            </>
+          )}
         </button>
       </div>
+
+      {exportNotice && (
+        <div
+          className={`p-3 border rounded-sm text-xs flex items-center justify-between gap-2 ${
+            exportNotice.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+              : "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {exportNotice.type === "success" ? (
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+            ) : (
+              <AlertCircle className="h-4 w-4 shrink-0" />
+            )}
+            <span className="font-semibold">{exportNotice.text}</span>
+          </div>
+          <button
+            onClick={() => setExportNotice(null)}
+            className="text-[10px] font-bold uppercase underline cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="p-12 text-center bg-card border border-border rounded-sm">
